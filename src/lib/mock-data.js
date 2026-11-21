@@ -709,6 +709,45 @@ export const products = [
   },
 ];
 
+export const promotions = [
+  {
+    id: 'promo-doble-2x1',
+    title: '2x1 en la Clásica',
+    note: 'Hoy hasta las 8:00 p. m.',
+    businessId: 'la-doble-de-tito',
+    productId: 'clasica-casa',
+    badge: '2x1',
+    emoji: '🍔',
+    tone: 'accent',
+    price: 5,
+    originalPrice: 10,
+  },
+  {
+    id: 'promo-pizza-20',
+    title: '20% en la Pizza Margarita',
+    note: 'Válido para comer aquí o llevar.',
+    businessId: 'pizza-medano',
+    productId: 'pizza-margarita',
+    badge: '-20%',
+    emoji: '🍕',
+    tone: 'amber',
+    price: 6.4,
+    originalPrice: 8,
+  },
+  {
+    id: 'promo-salchipapa',
+    title: 'Salchipapa + refresco',
+    note: 'Combo por tiempo limitado.',
+    businessId: 'la-doble-de-tito',
+    productId: 'salchipapa-clasica',
+    badge: 'Combo',
+    emoji: '🍟',
+    tone: 'green',
+    price: 5.5,
+    originalPrice: 6.5,
+  },
+];
+
 export function getBusinessById(id) {
   return businesses.find((business) => business.id === id);
 }

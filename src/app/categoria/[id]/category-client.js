@@ -51,14 +51,19 @@ export default function CategoryClient({ categoryId }) {
 
       {ranking.length > 0 ? (
         <div className="mt-5 overflow-hidden rounded-[24px] bg-soft px-4">
-          {ranking.map((product, index) => (
-            <div
-              key={product.id}
-              className={index > 0 ? "border-t border-line" : ""}
-            >
-              <DishRow product={product} rank={index + 1} />
-            </div>
-          ))}
+          {ranking.map((entry, index) => {
+            const product = entry.product || entry;
+            const rank = entry.position || index + 1;
+
+            return (
+              <div
+                key={product.id || `rank-${rank}`}
+                className={index > 0 ? "border-t border-line" : ""}
+              >
+                <DishRow product={product} rank={rank} />
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="mt-5">

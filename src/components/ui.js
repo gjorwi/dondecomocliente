@@ -279,6 +279,60 @@ export function BusinessCard({ business }) {
   );
 }
 
+const promoTones = {
+  accent: { card: "bg-accent-tint", badge: "bg-accent" },
+  amber: { card: "bg-amber-tint", badge: "bg-[#b7791f]" },
+  green: { card: "bg-green-tint", badge: "bg-open" },
+};
+
+export function PromoCard({ promotion }) {
+  const business = getBusinessById(promotion.businessId);
+  const tone = promoTones[promotion.tone] || promoTones.accent;
+
+  return (
+    <Link
+      href={`/plato/${promotion.productId}`}
+      className={`group flex w-[86vw] max-w-[420px] shrink-0 snap-start items-center gap-3 rounded-[20px] border border-line/70 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-[420px] ${tone.card}`}
+    >
+      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/60 text-[30px]">
+        {promotion.emoji}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate text-[15px] font-semibold leading-5 text-ink">
+          {promotion.title}
+        </h3>
+        <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+          <span
+            className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-4 text-white ${tone.badge}`}
+          >
+            {promotion.badge}
+          </span>
+          <p className="truncate text-[11px] leading-4 text-muted">
+            {business?.name || "Establecimiento"} · {promotion.note}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-1.5">
+        <div className="text-right">
+          <p className="font-display text-lg leading-none tracking-[-0.03em] text-ink">
+            ${promotion.price.toFixed(2)}
+          </p>
+          {typeof promotion.originalPrice === "number" ? (
+            <p className="mt-0.5 text-[10px] leading-3 text-muted line-through">
+              ${promotion.originalPrice.toFixed(2)}
+            </p>
+          ) : null}
+        </div>
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink transition group-hover:bg-accent group-hover:text-white">
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export function DishCard({ product }) {
   const business = getBusinessById(product.businessId);
   const score = getAdjustedProductScore(product);

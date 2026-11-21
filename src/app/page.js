@@ -11,7 +11,9 @@ import {
   SearchField,
   SectionTitle,
 } from "@/components/ui";
+import { PromoCarousel } from "@/components/promo-carousel";
 import { useBusinesses, useCategories } from "@/lib/hooks";
+import { promotions } from "@/lib/mock-data";
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -80,6 +82,8 @@ export default function ExplorePage() {
           placeholder="¿Qué quieres comer? Busca un plato o local"
         />
       </div>
+
+      <PromoCarousel promotions={promotions} />
 
       <SectionTitle
         title="Mejores por categoría"

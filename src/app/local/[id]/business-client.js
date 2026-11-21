@@ -43,7 +43,7 @@ export default function BusinessClient({ businessId }) {
   const savedKey = `local:${business.id}`;
   const saved = isSaved(savedKey);
   const whatsappUrl = `https://wa.me/${business.whatsapp}?text=${encodeURIComponent(
-    `Hola, vi ${business.name} en dóndecomo. ¿Me comparten información del menú?`,
+    `Hola, vi ${business.name} en comidasTop. ¿Me comparten información del menú?`,
   )}`;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     business.address,
@@ -81,7 +81,7 @@ export default function BusinessClient({ businessId }) {
         <button
           type="button"
           onClick={() => toggleSaved(savedKey)}
-          aria-label={saved ? "Quitar de guardados" : "Guardar establecimiento"}
+          aria-label={saved ? "Quitar de favoritos" : "Añadir a favoritos"}
           className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition hover:scale-105"
         >
           <Heart
@@ -141,7 +141,7 @@ export default function BusinessClient({ businessId }) {
           <span className="text-[28px]">🏅</span>
           <div>
             <p className="text-sm font-semibold text-[#5c3d00]">
-              Reconocimiento de dóndecomo
+              Reconocimiento de comidasTop
             </p>
             <p className="mt-1 text-xs text-[#6a4700]">
               Top {recognition.position} en{" "}

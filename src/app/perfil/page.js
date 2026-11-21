@@ -38,7 +38,7 @@ export default function ProfilePage() {
         <div className="mt-4 flex items-center justify-between gap-4">
           <span className="inline-flex items-center gap-2 text-sm text-ink">
             <Heart className="h-4 w-4 text-accent" />
-            Platos y locales guardados
+            Platos y locales favoritos
           </span>
           <span className="font-display text-2xl text-accent">
             {savedIds.length}

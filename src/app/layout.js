@@ -26,7 +26,7 @@ const bricolage = localFont({
 });
 
 export const metadata = {
-  title: "dóndecomo · Clientes",
+  title: "comidasTop · Clientes",
   description:
     "Encuentra platos y establecimientos de comida en Coro según su reputación.",
 };

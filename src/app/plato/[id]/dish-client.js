@@ -77,7 +77,7 @@ export default function DishClient({ productId }) {
         <button
           type="button"
           onClick={() => toggleSaved(savedKey)}
-          aria-label={saved ? "Quitar plato de guardados" : "Guardar plato"}
+          aria-label={saved ? "Quitar plato de favoritos" : "Añadir plato a favoritos"}
           className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition hover:scale-105"
         >
           <Heart

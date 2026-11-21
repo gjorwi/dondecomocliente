@@ -46,3 +46,25 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@keyframes scan-line {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(-88px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(88px);
+  }
+}
+
+.scan-line {
+  animation: scan-line 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line {
+    animation: none;
+  }
+}
