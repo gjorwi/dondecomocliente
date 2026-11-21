@@ -59,7 +59,7 @@ export function PromoCarousel({ promotions }) {
           </p>
         </div>
 
-        <div className="flex shrink-0 gap-2">
+        <div className="hidden shrink-0 gap-2 md:flex">
           <button
             type="button"
             onClick={() => slide(-1)}

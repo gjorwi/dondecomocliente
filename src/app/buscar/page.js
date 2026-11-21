@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
-import { Navigation, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, Clock3, Navigation, SlidersHorizontal } from "lucide-react";
 import {
   BusinessCard,
   CardGrid,
@@ -34,6 +34,22 @@ const zoneDistance = {
   Oeste: 4.6,
 };
 
+const DESKTOP_MEDIA_QUERY = "(min-width: 768px)";
+
+function subscribeToDesktop(callback) {
+  const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
+  mediaQuery.addEventListener("change", callback);
+  return () => mediaQuery.removeEventListener("change", callback);
+}
+
+function getDesktopSnapshot() {
+  return window.matchMedia(DESKTOP_MEDIA_QUERY).matches;
+}
+
+function getDesktopServerSnapshot() {
+  return false;
+}
+
 function getZoneDistance(business) {
   return zoneDistance[business?.zone] ?? 99;
 }
@@ -61,6 +77,13 @@ function SearchContent({ initialQuery, initialCategory }) {
   const [categoryId, setCategoryId] = useState(initialCategory);
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [nearMe, setNearMe] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(null);
+  const isDesktop = useSyncExternalStore(
+    subscribeToDesktop,
+    getDesktopSnapshot,
+    getDesktopServerSnapshot,
+  );
+  const filtersExpanded = filtersOpen ?? isDesktop;
   const { categories } = useCategories();
   const { products } = useProducts();
   const { businesses } = useBusinesses();
@@ -68,6 +91,19 @@ function SearchContent({ initialQuery, initialCategory }) {
     () => new Map(businesses.map((business) => [business.id, business])),
     [businesses],
   );
+
+  const activeFilterCount =
+    (type !== "todo" ? 1 : 0) +
+    (categoryId !== "todos" ? 1 : 0) +
+    (onlyOpen ? 1 : 0) +
+    (nearMe ? 1 : 0);
+
+  const clearFilters = () => {
+    setType("todo");
+    setCategoryId("todos");
+    setOnlyOpen(false);
+    setNearMe(false);
+  };
 
   const normalizedQuery = normalizeText(query);
 
@@ -156,69 +192,125 @@ function SearchContent({ initialQuery, initialCategory }) {
         />
       </div>
 
-      <div className="no-scrollbar mt-4 flex gap-2 overflow-x-auto pb-1">
-        {resultTypes.map((item) => (
-          <Chip
-            key={item.id}
-            selected={type === item.id}
-            onClick={() => setType(item.id)}
-          >
-            {item.label}
-          </Chip>
-        ))}
-      </div>
-
-      <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
-        <Chip
-          selected={categoryId === "todos"}
-          onClick={() => setCategoryId("todos")}
-        >
-          Todas
-        </Chip>
-        {categories.map((category) => (
-          <Chip
-            key={category.id}
-            selected={categoryId === category.id}
-            onClick={() => setCategoryId(category.id)}
-          >
-            {category.label}
-          </Chip>
-        ))}
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <button
           type="button"
-          onClick={() => setOnlyOpen((current) => !current)}
+          onClick={() => setFiltersOpen((current) => !(current ?? isDesktop))}
+          aria-expanded={filtersExpanded}
+          aria-controls="search-filters"
           className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${
-            onlyOpen
-              ? "border-open bg-green-tint text-open"
+            activeFilterCount
+              ? "border-accent/40 bg-accent-tint text-accent"
               : "border-line bg-white text-ink hover:bg-soft"
           }`}
         >
           <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-          Abierto ahora
-          <span className="text-xs font-normal text-muted">
-            {onlyOpen ? "Activo" : "Filtrar"}
-          </span>
+          Filtros
+          {activeFilterCount ? (
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] text-white">
+              {activeFilterCount}
+            </span>
+          ) : null}
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${
+              filtersExpanded ? "rotate-180" : ""
+            }`}
+            aria-hidden="true"
+          />
         </button>
 
-        <button
-          type="button"
-          onClick={() => setNearMe((current) => !current)}
-          aria-pressed={nearMe}
-          className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${
-            nearMe
-              ? "border-accent bg-accent-tint text-accent"
-              : "border-line bg-white text-ink hover:bg-soft"
-          }`}
-        >
-          <Navigation className="h-4 w-4" aria-hidden="true" />
-          Cerca de mí
-          <span className="text-xs font-normal text-muted">
-            {nearMe ? "Activo" : "Ordenar"}
-          </span>
-        </button>
+        {activeFilterCount ? (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="text-xs font-semibold text-accent hover:underline"
+          >
+            Limpiar filtros
+          </button>
+        ) : null}
+      </div>
+
+      <div
+        id="search-filters"
+        className={`mt-3 gap-4 rounded-[24px] border border-line/70 bg-white p-4 shadow-sm ${
+          filtersExpanded ? "grid" : "hidden"
+        }`}
+      >
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+            Tipo de resultado
+          </p>
+          <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
+            {resultTypes.map((item) => (
+              <Chip
+                key={item.id}
+                selected={type === item.id}
+                onClick={() => setType(item.id)}
+              >
+                {item.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+            Categoría
+          </p>
+          <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
+            <Chip
+              selected={categoryId === "todos"}
+              onClick={() => setCategoryId("todos")}
+            >
+              Todas
+            </Chip>
+            {categories.map((category) => (
+              <Chip
+                key={category.id}
+                selected={categoryId === category.id}
+                onClick={() => setCategoryId(category.id)}
+              >
+                {category.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setOnlyOpen((current) => !current)}
+            aria-pressed={onlyOpen}
+            className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${
+              onlyOpen
+                ? "border-open bg-green-tint text-open"
+                : "border-line bg-white text-ink hover:bg-soft"
+            }`}
+          >
+            <Clock3 className="h-4 w-4" aria-hidden="true" />
+            Abierto ahora
+            <span className="text-xs font-normal text-muted">
+              {onlyOpen ? "Activo" : "Filtrar"}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setNearMe((current) => !current)}
+            aria-pressed={nearMe}
+            className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${
+              nearMe
+                ? "border-accent bg-accent-tint text-accent"
+                : "border-line bg-white text-ink hover:bg-soft"
+            }`}
+          >
+            <Navigation className="h-4 w-4" aria-hidden="true" />
+            Cerca de mí
+            <span className="text-xs font-normal text-muted">
+              {nearMe ? "Activo" : "Ordenar"}
+            </span>
+          </button>
+        </div>
       </div>
 
       {isEmpty ? (
