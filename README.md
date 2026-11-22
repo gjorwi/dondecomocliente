@@ -21,10 +21,12 @@ Aplicación web Next.js para descubrir platos y establecimientos de comida en Co
 Copia `.env.example` a `.env.local` y ajusta:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:4000/api
+API_URL=http://localhost:4000/api
 ```
 
 La API se encuentra en `../api`.
+
+En Vercel configura `API_URL` con la URL base del API, incluyendo `/api` (por ejemplo `https://api.tudominio.com/api`) y vuelve a desplegar. La app usa un rewrite de Next.js para reenviar `/api/*` desde el servidor, sin llamadas cross-origin desde el navegador.
 
 ## Desarrollo
 
