@@ -241,6 +241,9 @@ export function BusinessCard({ business }) {
   const hasScore = Object.prototype.hasOwnProperty.call(business, "score");
   const score = hasScore ? business.score : metrics.score;
   const ratingsCount = hasScore ? business.ratingsCount : metrics.ratingsCount;
+  const businessArea = [business.municipality, business.parish, business.sector]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <Link
@@ -263,7 +266,7 @@ export function BusinessCard({ business }) {
           ) : null}
         </div>
         <p className="mt-1 text-[12px] leading-4 text-muted">
-          {business.zone} · Coro
+          {businessArea || business.zone || "Coro"}
         </p>
         <p className="mt-1 line-clamp-2 text-[12px] leading-4 text-muted">
           {business.description}
@@ -336,6 +339,9 @@ export function PromoCard({ promotion }) {
 export function DishCard({ product }) {
   const business = getBusinessById(product.businessId);
   const score = getAdjustedProductScore(product);
+  const businessArea = [business?.municipality, business?.parish, business?.sector]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <Link
@@ -355,8 +361,8 @@ export function DishCard({ product }) {
           {product.name}
         </h3>
         <p className="mt-1 line-clamp-1 text-[12px] leading-4 text-muted">
-          {product.businessName || business?.name} ·{" "}
-          {business?.zone || "Coro"}
+          {product.businessName || business?.name}
+          {businessArea ? ` · ${businessArea}` : business?.zone ? ` · ${business.zone}` : ""}
         </p>
         <div className="mt-auto flex items-center justify-between gap-1.5 pt-2">
           <RatingLine

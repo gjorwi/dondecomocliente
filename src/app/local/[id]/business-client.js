@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   BadgeCheck,
   Clock3,
@@ -45,9 +46,21 @@ export default function BusinessClient({ businessId }) {
   const whatsappUrl = `https://wa.me/${business.whatsapp}?text=${encodeURIComponent(
     `Hola, vi ${business.name} en comidasTop. ¿Me comparten información del menú?`,
   )}`;
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    business.address,
+  const coordinates = business.location;
+  const hasCoordinates =
+    typeof coordinates?.lat === "number" &&
+    Number.isFinite(coordinates.lat) &&
+    typeof coordinates?.lng === "number" &&
+    Number.isFinite(coordinates.lng);
+  const mapQuery = hasCoordinates
+    ? `${coordinates.lat},${coordinates.lng}`
+    : business.address;
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    mapQuery,
   )}`;
+  const businessArea = [business.municipality, business.parish, business.sector]
+    .filter(Boolean)
+    .join(" · ");
   const metrics = {
     score: business.score,
     ratingsCount: business.ratingsCount ?? 0,
@@ -62,9 +75,23 @@ export default function BusinessClient({ businessId }) {
       <BackLink href="/" />
 
       <section className="relative h-48 overflow-hidden rounded-[30px] bg-accent-tint sm:h-56">
-        <div className="flex h-full items-center justify-center text-[92px] sm:text-[110px]">
-          {business.emoji || "🍽️"}
-        </div>
+        {business.coverImage ? (
+          <Image
+            src={business.coverImage}
+            alt={`Portada de ${business.name}`}
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 100vw, 1152px"
+            className="object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-[92px] sm:text-[110px]">
+            {business.emoji || "🍽️"}
+          </div>
+        )}
+        {business.coverImage ? (
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
+        ) : null}
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
           {business.isVerified ? (
             <Pill tone="open">
@@ -97,7 +124,8 @@ export default function BusinessClient({ businessId }) {
           {business.name}
         </h1>
         <p className="mt-1.5 text-sm text-muted">
-          {business.category} · zona {business.zone}, Coro
+          {business.category}
+          {businessArea ? ` · ${businessArea}` : business.zone ? ` · ${business.zone}` : ""}
         </p>
       </div>
 
@@ -129,6 +157,11 @@ export default function BusinessClient({ businessId }) {
             </p>
           </div>
           <p className="mt-1 text-xs text-muted">{business.hours}</p>
+          <div className="mt-2">
+            <Pill tone={business.hasDelivery ? "open" : "beige"}>
+              {business.hasDelivery ? "Hace domicilio" : "Solo en el local"}
+            </Pill>
+          </div>
           <div className="mt-4 flex items-start gap-2 text-xs text-muted">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
             {business.address}
@@ -228,6 +261,12 @@ export default function BusinessClient({ businessId }) {
           {business.description}
         </p>
         <p className="mt-3 text-xs text-muted">{business.address}</p>
+        {businessArea ? (
+          <p className="mt-1 text-xs text-muted">{businessArea}</p>
+        ) : null}
+        <p className="mt-1 text-xs text-muted">
+          {business.hasDelivery ? "Ofrece servicio de domicilio." : "Atención en el establecimiento."}
+        </p>
         <p className="mt-1 text-xs text-muted">{business.phone}</p>
       </div>
 

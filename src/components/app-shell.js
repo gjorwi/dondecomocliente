@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Heart,
@@ -52,10 +53,20 @@ export function AppShell({ children }) {
           <Link
             href="/"
             aria-label="comidasTop, ir al inicio"
-            className="font-display text-[26px] leading-none tracking-[-0.055em]"
+            className="flex shrink-0 items-center gap-2 font-display text-[24px] leading-none tracking-[-0.055em] sm:gap-2.5 sm:text-[26px]"
           >
-            <span className="text-ink">comidas</span>
-            <span className="text-accent">Top</span>
+            <Image
+              src="/logo.jpg"
+              alt=""
+              width={40}
+              height={40}
+              priority
+              className="h-8 w-8 shrink-0 rounded-full object-contain sm:h-10 sm:w-10"
+            />
+            <span>
+              <span className="text-ink">comidas</span>
+              <span className="text-accent">Top</span>
+            </span>
           </Link>
 
           <nav
@@ -92,7 +103,7 @@ export function AppShell({ children }) {
             </Link>
           </nav>
 
-          <div className="flex min-h-10 items-center gap-1.5 rounded-full bg-beige px-3 text-sm font-semibold text-ink">
+          <div className="flex min-h-10 items-center gap-1.5 rounded-full bg-beige px-3 text-sm font-semibold text-ink md:hidden lg:flex">
             <MapPin className="h-4 w-4 text-accent" aria-hidden="true" />
             Coro
           </div>
@@ -105,7 +116,7 @@ export function AppShell({ children }) {
 
       <nav
         aria-label="Navegación inferior"
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-white px-2 pb-[env(safe-area-inset-bottom)] pt-2 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-white px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 md:hidden"
       >
         <div className="relative mx-auto flex max-w-lg items-stretch gap-1">
           {navigation.slice(0, 2).map(renderTab)}
