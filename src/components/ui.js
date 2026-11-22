@@ -7,13 +7,7 @@ import {
   Search,
   Star,
 } from "lucide-react";
-import { getBusinessById } from "@/lib/mock-data";
-import {
-  formatScore,
-  getAdjustedProductScore,
-  getBusinessMetrics,
-  getCategoryRanking,
-} from "@/lib/scoring";
+import { formatScore, getAdjustedProductScore } from "@/lib/scoring";
 
 const pillTones = {
   beige: "bg-beige text-ink",
@@ -166,22 +160,10 @@ export function BackLink({ href, label = "Volver" }) {
 }
 
 export function CategoryCard({ category }) {
-  const fallbackTop = getCategoryRanking(category.id)[0];
-  const hasTopField = Object.prototype.hasOwnProperty.call(category, "top");
-  const top = hasTopField ? category.top?.product : fallbackTop;
-  const business = hasTopField
-    ? category.top?.business
-    : top
-      ? getBusinessById(top.businessId)
-      : null;
-  const score = hasTopField
-    ? category.top?.score
-    : top
-      ? getAdjustedProductScore(top)
-      : null;
-  const ratingsCount = hasTopField
-    ? category.top?.ratingsCount ?? 0
-    : top?.ratingsCount ?? 0;
+  const top = category.top?.product;
+  const business = category.top?.business;
+  const score = category.top?.score;
+  const ratingsCount = category.top?.ratingsCount ?? 0;
 
   return (
     <Link
@@ -237,10 +219,8 @@ export function CategoryCard({ category }) {
 }
 
 export function BusinessCard({ business }) {
-  const metrics = getBusinessMetrics(business.id);
-  const hasScore = Object.prototype.hasOwnProperty.call(business, "score");
-  const score = hasScore ? business.score : metrics.score;
-  const ratingsCount = hasScore ? business.ratingsCount : metrics.ratingsCount;
+  const score = business.score;
+  const ratingsCount = business.ratingsCount ?? 0;
   const businessArea = [business.municipality, business.parish, business.sector]
     .filter(Boolean)
     .join(" · ");
@@ -250,8 +230,19 @@ export function BusinessCard({ business }) {
       href={`/local/${business.id}`}
       className="group flex h-[300px] flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
     >
-      <div className="flex h-28 shrink-0 items-center justify-center rounded-[18px] bg-accent-tint text-[54px]">
-        {business.emoji || "🍽️"}
+      <div className="relative flex h-28 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-accent-tint text-[54px]">
+        {business.coverImage ? (
+          <Image
+            src={business.coverImage}
+            alt=""
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 50vw, 300px"
+            className="object-cover"
+          />
+        ) : (
+          business.emoji || "🍽️"
+        )}
       </div>
       <div className="mt-3 flex min-h-0 flex-1 flex-col">
         <div className="flex items-start gap-1.5">
@@ -289,7 +280,6 @@ const promoTones = {
 };
 
 export function PromoCard({ promotion }) {
-  const business = getBusinessById(promotion.businessId);
   const tone = promoTones[promotion.tone] || promoTones.accent;
 
   return (
@@ -312,7 +302,7 @@ export function PromoCard({ promotion }) {
             {promotion.badge}
           </span>
           <p className="truncate text-[11px] leading-4 text-muted">
-            {business?.name || "Establecimiento"} · {promotion.note}
+            {promotion.businessName || "Establecimiento"} · {promotion.note}
           </p>
         </div>
       </div>
@@ -337,9 +327,8 @@ export function PromoCard({ promotion }) {
 }
 
 export function DishCard({ product }) {
-  const business = getBusinessById(product.businessId);
   const score = getAdjustedProductScore(product);
-  const businessArea = [business?.municipality, business?.parish, business?.sector]
+  const businessArea = [product.businessMunicipality, product.businessParish, product.businessSector]
     .filter(Boolean)
     .join(" · ");
 
@@ -372,8 +361,8 @@ export function DishCard({ product }) {
           {product.name}
         </h3>
         <p className="mt-1 line-clamp-1 text-[12px] leading-4 text-muted">
-          {product.businessName || business?.name}
-          {businessArea ? ` · ${businessArea}` : business?.zone ? ` · ${business.zone}` : ""}
+          {product.businessName || "Establecimiento"}
+          {businessArea ? ` · ${businessArea}` : ""}
         </p>
         <div className="mt-auto flex items-center justify-between gap-1.5 pt-2">
           <RatingLine
@@ -393,8 +382,7 @@ export function DishCard({ product }) {
 }
 
 export function DishRow({ product, rank }) {
-  const business = getBusinessById(product.businessId);
-  const businessName = product.businessName || business?.name;
+  const businessName = product.businessName || "Establecimiento";
   const score = getAdjustedProductScore(product);
 
   return (

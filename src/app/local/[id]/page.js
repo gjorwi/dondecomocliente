@@ -1,10 +1,5 @@
 import { Suspense } from "react";
-import { businesses } from "@/lib/mock-data";
 import BusinessClient from "./business-client";
-
-export function generateStaticParams() {
-  return businesses.map((business) => ({ id: business.id }));
-}
 
 async function BusinessContent({ params }) {
   const { id } = await params;

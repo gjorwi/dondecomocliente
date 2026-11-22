@@ -1,10 +1,5 @@
 import { Suspense } from "react";
-import { products } from "@/lib/mock-data";
 import DishClient from "./dish-client";
-
-export function generateStaticParams() {
-  return products.map((product) => ({ id: product.id }));
-}
 
 async function DishContent({ params }) {
   const { id } = await params;

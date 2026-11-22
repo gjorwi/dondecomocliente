@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { businesses } from "@/lib/mock-data";
 import ScanRatingClient from "./scan-rating-client";
 
 export const metadata = {
@@ -7,10 +6,6 @@ export const metadata = {
   description:
     "Puntúa los platos del local que acabas de escanear, de 1 a 5 estrellas.",
 };
-
-export function generateStaticParams() {
-  return businesses.map((business) => ({ businessId: business.id }));
-}
 
 async function RatingContent({ params }) {
   const { businessId } = await params;

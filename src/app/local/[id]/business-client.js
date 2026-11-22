@@ -24,8 +24,16 @@ import { useBusiness } from "@/lib/hooks";
 import { useSaved } from "@/components/saved-provider";
 
 export default function BusinessClient({ businessId }) {
-  const { business, products } = useBusiness(businessId);
+  const { business, products, isLoading } = useBusiness(businessId);
   const { isSaved, toggleSaved } = useSaved();
+
+  if (isLoading && !business) {
+    return (
+      <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
+        Cargando establecimiento…
+      </div>
+    );
+  }
 
   if (!business) {
     return (

@@ -13,15 +13,16 @@ import {
   SectionTitle,
 } from "@/components/ui";
 import { PromoCarousel } from "@/components/promo-carousel";
-import { useBusinesses, useCategories } from "@/lib/hooks";
-import { promotions } from "@/lib/mock-data";
+import { useBusinesses, useCategories, usePromotions } from "@/lib/hooks";
 
 export default function ExploreClient() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [onlyOpen, setOnlyOpen] = useState(false);
-  const { categories } = useCategories();
-  const { businesses } = useBusinesses();
+  const { categories, isLoading: categoriesLoading } = useCategories();
+  const { businesses, isLoading: businessesLoading } = useBusinesses();
+  const { promotions, isLoading: promotionsLoading } = usePromotions();
+  const featuredCategories = categories.filter((category) => category.top);
 
   const recommendedBusinesses = useMemo(
     () =>
@@ -84,17 +85,28 @@ export default function ExploreClient() {
         />
       </div>
 
-      <PromoCarousel promotions={promotions} />
+      <PromoCarousel promotions={promotions} loading={promotionsLoading} />
 
       <SectionTitle
         title="Mejores por categoría"
-        description="El plato mejor puntuado de cada categoría. Toca una para ver su Top 3."
+        description="Solo mostramos categorías con calificaciones suficientes. Toca una para ver su Top 3."
       />
-      <CardGrid>
-        {categories.map((category) => (
-          <CategoryCard key={category.id} category={category} />
-        ))}
-      </CardGrid>
+      {categoriesLoading ? (
+        <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
+          Cargando categorías…
+        </div>
+      ) : featuredCategories.length ? (
+        <CardGrid>
+          {featuredCategories.map((category) => (
+            <CategoryCard key={category.id} category={category} />
+          ))}
+        </CardGrid>
+      ) : (
+        <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
+          Aún no hay categorías con calificaciones suficientes para mostrar un
+          Top.
+        </div>
+      )}
 
       <div className="mt-7 flex items-center justify-between gap-3 rounded-[24px] bg-white px-4 py-3.5 shadow-sm">
         <div>
@@ -127,7 +139,11 @@ export default function ExploreClient() {
         action="Ver todos"
         href="/buscar"
       />
-      {recommendedBusinesses.length ? (
+      {businessesLoading ? (
+        <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
+          Cargando locales…
+        </div>
+      ) : recommendedBusinesses.length ? (
         <CardGrid>
           {recommendedBusinesses.map((business) => (
             <BusinessCard key={business.id} business={business} />
@@ -170,10 +186,10 @@ export default function ExploreClient() {
       </Link>
 
       <div className="mt-8 flex flex-col items-center gap-2 rounded-[24px] border border-line bg-white px-5 py-5 text-center">
-        <Pill tone="amber">Datos de demostración</Pill>
+        <Pill tone="amber">Datos reales</Pill>
         <p className="max-w-xl text-xs leading-5 text-muted">
-          Las puntuaciones se calculan a partir de platos puntuados. La
-          información de esta versión es ficticia.
+          La información y las puntuaciones se calculan con los datos
+          registrados por los establecimientos y sus clientes.
         </p>
       </div>
     </div>

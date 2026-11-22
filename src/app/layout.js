@@ -35,6 +35,8 @@ export const viewport = {
   themeColor: "#c9410f",
 };
 
+export const instant = false;
+
 export default function RootLayout({ children }) {
   return (
     <html lang="es" className={`${figtree.variable} ${bricolage.variable}`}>

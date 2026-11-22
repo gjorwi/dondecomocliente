@@ -9,8 +9,16 @@ import { useProduct } from "@/lib/hooks";
 import { useSaved } from "@/components/saved-provider";
 
 export default function DishClient({ productId }) {
-  const { product, business, category } = useProduct(productId);
+  const { product, business, category, isLoading } = useProduct(productId);
   const { isSaved, toggleSaved } = useSaved();
+
+  if (isLoading && !product) {
+    return (
+      <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
+        Cargando plato…
+      </div>
+    );
+  }
 
   if (!product) {
     return (

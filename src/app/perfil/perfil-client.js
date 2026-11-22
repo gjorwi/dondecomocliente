@@ -25,10 +25,10 @@ export default function ProfileClient() {
           <UserRound className="h-7 w-7 text-accent" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-ink">Explorador/a</p>
-          <p className="text-xs text-muted">Perfil de demostración</p>
+          <p className="font-semibold text-ink">Invitado</p>
+          <p className="text-xs text-muted">Acceso sin cuenta</p>
         </div>
-        <Pill tone="amber">Demo</Pill>
+        <Pill tone="beige">Público</Pill>
       </section>
 
       <section className="mt-4 rounded-[24px] bg-soft p-5">

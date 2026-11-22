@@ -8,8 +8,8 @@ import { saveScanSession } from "@/lib/scan-session";
 
 export default function ScanClient() {
   const router = useRouter();
-  const { businesses } = useBusinesses();
-  const demoBusinesses = businesses.slice(0, 6);
+  const { businesses, isLoading } = useBusinesses();
+  const availableBusinesses = businesses.slice(0, 6);
 
   const simulateScan = (businessId) => {
     saveScanSession(businessId);
@@ -59,9 +59,9 @@ export default function ScanClient() {
           Al seleccionarlo se abre la pantalla de puntuación de su menú.
         </p>
 
-        {demoBusinesses.length ? (
+        {availableBusinesses.length ? (
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {demoBusinesses.map((business) => (
+            {availableBusinesses.map((business) => (
               <button
                 key={business.id}
                 type="button"
@@ -89,7 +89,7 @@ export default function ScanClient() {
           </div>
         ) : (
           <p className="mt-4 rounded-2xl bg-soft p-4 text-sm text-muted">
-            No hay locales de demostración disponibles ahora.
+            {isLoading ? "Cargando locales…" : "No hay locales disponibles ahora."}
           </p>
         )}
 

@@ -10,7 +10,7 @@ import {
   SearchField,
   SectionTitle,
 } from "@/components/ui";
-import { normalizeText } from "@/lib/mock-data";
+import { normalizeText } from "@/lib/text";
 import { getAdjustedProductScore } from "@/lib/scoring";
 import { submitRating } from "@/lib/api";
 import { useBusiness, useCategories } from "@/lib/hooks";

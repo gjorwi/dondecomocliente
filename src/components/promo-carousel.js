@@ -1,10 +1,45 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, ChevronLeft, ChevronRight, Store } from "lucide-react";
 import { PromoCard } from "@/components/ui";
 
-export function PromoCarousel({ promotions }) {
+function PlatformPromoCard() {
+  return (
+    <Link
+      href="/solicitud-negocio"
+      className="group relative flex w-[86vw] max-w-[420px] shrink-0 snap-start flex-col overflow-hidden rounded-[20px] bg-ink p-4 text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg sm:w-[420px]"
+    >
+      <span className="pointer-events-none absolute -right-5 -top-8 text-[110px] leading-none opacity-10">
+        🍽️
+      </span>
+      <div className="relative z-10">
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
+            Gratis para negocios
+          </span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+            <Store className="h-5 w-5" aria-hidden="true" />
+          </span>
+        </div>
+        <h3 className="mt-2 font-display text-[20px] leading-[1.1] tracking-[-0.03em]">
+          Tu negocio, en comidasTop
+        </h3>
+        <p className="mt-1 max-w-[310px] text-[11px] leading-4 text-white/70">
+          Publica tu menú y recibe clientes. Registro gratis, sin comisiones ni
+          mensualidades.
+        </p>
+        <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-mustard">
+          Registrar mi negocio
+          <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" aria-hidden="true" />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+export function PromoCarousel({ promotions, loading = false }) {
   const trackRef = useRef(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
@@ -59,6 +94,7 @@ export function PromoCarousel({ promotions }) {
           </p>
         </div>
 
+        {!loading && promotions.length ? (
         <div className="hidden shrink-0 gap-2 md:flex">
           <button
             type="button"
@@ -79,15 +115,19 @@ export function PromoCarousel({ promotions }) {
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
+        ) : null}
       </div>
 
       <div
         ref={trackRef}
         className="no-scrollbar -mx-4 flex flex-nowrap snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:scroll-px-6 sm:px-6"
       >
-        {promotions.map((promotion) => (
-          <PromoCard key={promotion.id} promotion={promotion} />
-        ))}
+        <PlatformPromoCard />
+        {!loading
+          ? promotions.map((promotion) => (
+              <PromoCard key={promotion.id} promotion={promotion} />
+            ))
+          : null}
       </div>
     </section>
   );

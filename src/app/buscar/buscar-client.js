@@ -11,7 +11,7 @@ import {
   SearchField,
   SectionTitle,
 } from "@/components/ui";
-import { normalizeText } from "@/lib/mock-data";
+import { normalizeText } from "@/lib/text";
 import { getAdjustedProductScore } from "@/lib/scoring";
 import {
   useBusinesses,
@@ -99,8 +99,8 @@ function SearchContent({ initialQuery, initialCategory }) {
   );
   const filtersExpanded = filtersOpen ?? isDesktop;
   const { categories } = useCategories();
-  const { products } = useProducts();
-  const { businesses } = useBusinesses();
+  const { products, isLoading: productsLoading } = useProducts();
+  const { businesses, isLoading: businessesLoading } = useBusinesses();
   const businessMap = useMemo(
     () => new Map(businesses.map((business) => [business.id, business])),
     [businesses],
@@ -211,7 +211,9 @@ function SearchContent({ initialQuery, initialCategory }) {
 
   const showProducts = type !== "locales";
   const showBusinesses = type !== "platos";
+  const resultsLoading = productsLoading || businessesLoading;
   const isEmpty =
+    !resultsLoading &&
     (showProducts ? filteredProducts.length === 0 : true) &&
     (showBusinesses ? filteredBusinesses.length === 0 : true);
 
@@ -364,6 +366,12 @@ function SearchContent({ initialQuery, initialCategory }) {
         <p role="status" className="mt-2 text-xs font-semibold text-accent">
           {locationError}
         </p>
+      ) : null}
+
+      {resultsLoading ? (
+        <div className="mt-6 rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
+          Cargando resultados…
+        </div>
       ) : null}
 
       {isEmpty ? (

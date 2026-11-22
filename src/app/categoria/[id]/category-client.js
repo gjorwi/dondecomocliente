@@ -8,7 +8,15 @@ import { MIN_RATINGS_FOR_RANKING } from "@/lib/scoring";
 import { useRanking } from "@/lib/hooks";
 
 export default function CategoryClient({ categoryId }) {
-  const { category, ranking } = useRanking(categoryId);
+  const { category, ranking, isLoading } = useRanking(categoryId);
+
+  if (isLoading && !category) {
+    return (
+      <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
+        Cargando categoría…
+      </div>
+    );
+  }
 
   if (!category) {
     return (

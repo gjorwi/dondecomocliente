@@ -1,10 +1,5 @@
 import { Suspense } from "react";
-import { categories } from "@/lib/mock-data";
 import CategoryClient from "./category-client";
-
-export function generateStaticParams() {
-  return categories.map((category) => ({ id: category.id }));
-}
 
 async function CategoryContent({ params }) {
   const { id } = await params;

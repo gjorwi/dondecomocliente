@@ -14,7 +14,7 @@ Aplicación web Next.js para descubrir platos y establecimientos de comida en Co
 - Ficha de establecimiento con horario, contacto, menú y reputación calculada.
 - Ficha de plato informativa; la puntuación de 1 a 5 estrellas solo se habilita después de escanear el QR del local.
 - Favoritos persistentes en `localStorage`.
-- Datos de respaldo locales para desarrollo si la API no está disponible.
+- Todos los catálogos y resultados provienen de la API y la base de datos; no hay datos de ejemplo en la interfaz.
 
 ## API
 
