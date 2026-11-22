@@ -1,12 +1,42 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import "leaflet/dist/leaflet.css";
+import { useEffect, useRef, useState } from "react";
 
 const CORO_CENTER = { lat: 11.4061, lng: -69.6751 };
+const LEAFLET_PROMISE_KEY = "__comidasTopLeafletPromise";
 
-function pinIcon(L) {
-  return L.divIcon({
+function loadLeaflet() {
+  if (window.L) return Promise.resolve(window.L);
+  if (window[LEAFLET_PROMISE_KEY]) return window[LEAFLET_PROMISE_KEY];
+
+  window[LEAFLET_PROMISE_KEY] = new Promise((resolve, reject) => {
+    if (!document.querySelector('link[data-comidastop-leaflet="styles"]')) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "/vendor/leaflet/leaflet.css";
+      link.dataset.comidastopLeaflet = "styles";
+      document.head.appendChild(link);
+    }
+
+    const script = document.createElement("script");
+    script.src = "/vendor/leaflet/leaflet.js";
+    script.async = true;
+    script.onload = () => {
+      if (window.L) resolve(window.L);
+      else reject(new Error("Leaflet no quedó disponible en el navegador."));
+    };
+    script.onerror = () => {
+      delete window[LEAFLET_PROMISE_KEY];
+      reject(new Error("No se pudo cargar el mapa."));
+    };
+    document.body.appendChild(script);
+  });
+
+  return window[LEAFLET_PROMISE_KEY];
+}
+
+function pinIcon(leaflet) {
+  return leaflet.divIcon({
     className: "",
     html: '<span class="block h-6 w-6 rounded-full border-4 border-white bg-accent shadow-lg"></span>',
     iconSize: [24, 24],
@@ -21,6 +51,8 @@ export function LocationPicker({ value, onChange }) {
   const leafletRef = useRef(null);
   const valueRef = useRef(value);
   const onChangeRef = useRef(onChange);
+  const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState("");
 
   useEffect(() => {
     valueRef.current = value;
@@ -30,29 +62,29 @@ export function LocationPicker({ value, onChange }) {
   useEffect(() => {
     let active = true;
 
-    import("leaflet").then((module) => {
+    loadLeaflet().then((leaflet) => {
       if (!active || !containerRef.current) return;
-      const L = module.default ?? module;
-      leafletRef.current = L;
+      leafletRef.current = leaflet;
 
       const start = valueRef.current || CORO_CENTER;
-      const map = L.map(containerRef.current).setView(
+      const map = leaflet.map(containerRef.current).setView(
         [start.lat, start.lng],
         valueRef.current ? 17 : 14,
       );
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap",
       }).addTo(map);
       mapRef.current = map;
+      setMapReady(true);
 
       const placeMarker = (lat, lng, notify) => {
         if (markerRef.current) {
           markerRef.current.setLatLng([lat, lng]);
         } else {
-          const marker = L.marker([lat, lng], {
+          const marker = leaflet.marker([lat, lng], {
             draggable: true,
-            icon: pinIcon(L),
+            icon: pinIcon(leaflet),
           }).addTo(map);
           marker.on("dragend", () => {
             const point = marker.getLatLng();
@@ -70,6 +102,8 @@ export function LocationPicker({ value, onChange }) {
       if (valueRef.current) {
         placeMarker(start.lat, start.lng, false);
       }
+    }).catch(() => {
+      if (active) setMapError("No se pudo cargar el mapa. Recarga la página o intenta más tarde.");
     });
 
     return () => {
@@ -81,9 +115,9 @@ export function LocationPicker({ value, onChange }) {
   }, []);
 
   useEffect(() => {
-    const L = leafletRef.current;
+    const leaflet = leafletRef.current;
     const map = mapRef.current;
-    if (!L || !map || !value) return;
+    if (!leaflet || !map || !value) return;
 
     const marker = markerRef.current;
     const current = marker?.getLatLng();
@@ -98,9 +132,9 @@ export function LocationPicker({ value, onChange }) {
     if (marker) {
       marker.setLatLng([value.lat, value.lng]);
     } else {
-      const created = L.marker([value.lat, value.lng], {
+      const created = leaflet.marker([value.lat, value.lng], {
         draggable: true,
-        icon: pinIcon(L),
+        icon: pinIcon(leaflet),
       }).addTo(map);
       created.on("dragend", () => {
         const point = created.getLatLng();
@@ -116,7 +150,14 @@ export function LocationPicker({ value, onChange }) {
       ref={containerRef}
       role="application"
       aria-label="Mapa para marcar la ubicación del negocio"
-      className="h-[280px] w-full overflow-hidden rounded-[20px] border border-line bg-soft"
-    />
+      aria-busy={!mapReady && !mapError}
+      className="relative h-[280px] w-full overflow-hidden rounded-[20px] border border-line bg-soft"
+    >
+      {!mapReady ? (
+        <div className="pointer-events-none absolute inset-0 z-[1000] flex items-center justify-center bg-soft/90 px-4 text-center text-sm text-muted">
+          {mapError || "Cargando mapa…"}
+        </div>
+      ) : null}
+    </div>
   );
 }

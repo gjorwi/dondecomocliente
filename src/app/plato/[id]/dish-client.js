@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Heart } from "lucide-react";
 import { BackLink, EmptyState, Pill, RatingLine } from "@/components/ui";
@@ -33,10 +34,21 @@ export default function DishClient({ productId }) {
     <div>
       <BackLink href={business ? `/local/${business.id}` : "/"} />
 
-      <section className="relative flex h-52 items-center justify-center rounded-[30px] bg-amber-tint sm:h-64">
-        <span className="text-[100px] sm:text-[124px]">
-          {product.emoji || "🍽️"}
-        </span>
+      <section className="relative flex h-52 items-center justify-center overflow-hidden rounded-[30px] bg-amber-tint sm:h-64">
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={`Foto de ${product.name}`}
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 100vw, 1152px"
+            className="object-cover"
+          />
+        ) : (
+          <span className="text-[100px] sm:text-[124px]">
+            {product.emoji || "🍽️"}
+          </span>
+        )}
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
           <Pill>{category?.label || "Plato"}</Pill>
           {product.isAvailable === false ? (

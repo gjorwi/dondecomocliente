@@ -348,8 +348,19 @@ export function DishCard({ product }) {
       href={`/plato/${product.id}`}
       className="group flex h-[300px] flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
     >
-      <div className="relative flex h-32 shrink-0 items-center justify-center rounded-[18px] bg-amber-tint text-[54px]">
-        {product.emoji || "🍽️"}
+      <div className="relative flex h-32 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-amber-tint text-[54px]">
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt=""
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 50vw, 300px"
+            className="object-cover"
+          />
+        ) : (
+          product.emoji || "🍽️"
+        )}
         {product.isAvailable === false ? (
           <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-1 text-[10px] font-semibold text-white">
             No disponible hoy
