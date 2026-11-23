@@ -23,6 +23,39 @@ import { formatScore } from "@/lib/scoring";
 import { useBusiness } from "@/lib/hooks";
 import { useSaved } from "@/components/saved-provider";
 
+function formatMoney(value) {
+  return `$${Number(value).toFixed(2)}`;
+}
+
+function DeliveryRates({ business }) {
+  const shortFee = business.deliveryShortFee;
+  const longFee = business.deliveryLongFee;
+  const freeFrom = business.freeDeliveryFrom;
+  const hasRates =
+    typeof shortFee === "number" ||
+    typeof longFee === "number" ||
+    typeof freeFrom === "number";
+
+  if (!hasRates) return null;
+
+  return (
+    <div className="mt-2 rounded-2xl bg-soft p-3 text-xs leading-5 text-muted">
+      <p className="font-semibold text-ink">Tarifas de delivery</p>
+      {typeof shortFee === "number" ? (
+        <p className="mt-0.5">Delivery corto: {formatMoney(shortFee)}</p>
+      ) : null}
+      {typeof longFee === "number" ? (
+        <p className="mt-0.5">Delivery largo: {formatMoney(longFee)}</p>
+      ) : null}
+      {typeof freeFrom === "number" ? (
+        <p className="mt-0.5 text-open">
+          Delivery gratis en compras desde {formatMoney(freeFrom)}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export default function BusinessClient({ businessId }) {
   const { business, products, isLoading } = useBusiness(businessId);
   const { isSaved, toggleSaved } = useSaved();
@@ -159,20 +192,53 @@ export default function BusinessClient({ businessId }) {
           <div className="flex items-center gap-2">
             <Clock3 className="h-5 w-5 text-open" />
             <p className="text-sm font-semibold text-ink">
-              {business.isOpen
-                ? `Cierra a las ${business.closesAt}`
-                : "Cerrado ahora"}
+              {business.isOpen ? "Abierto ahora" : "Cerrado ahora"}
             </p>
           </div>
-          <p className="mt-1 text-xs text-muted">{business.hours}</p>
+          {business.hours ? (
+            <p className="mt-1 text-xs text-muted">{business.hours}</p>
+          ) : (
+            <p className="mt-1 text-xs text-muted">
+              Horario no indicado por el establecimiento.
+            </p>
+          )}
           <div className="mt-2">
             <Pill tone={business.hasDelivery ? "open" : "beige"}>
-              {business.hasDelivery ? "Hace domicilio" : "Solo en el local"}
+              {business.hasDelivery
+                ? "Con servicio de delivery"
+                : "Sin servicio de delivery"}
             </Pill>
           </div>
+          {business.hasDelivery &&
+          (typeof business.deliveryShortFee === "number" ||
+            typeof business.deliveryLongFee === "number") ? (
+            <p className="mt-2 text-[11px] leading-4 text-muted">
+              {typeof business.deliveryShortFee === "number"
+                ? `Corto ${formatMoney(business.deliveryShortFee)}`
+                : null}
+              {typeof business.deliveryShortFee === "number" &&
+              typeof business.deliveryLongFee === "number"
+                ? " · "
+                : null}
+              {typeof business.deliveryLongFee === "number"
+                ? `Largo ${formatMoney(business.deliveryLongFee)}`
+                : null}
+            </p>
+          ) : null}
+          {business.hasDelivery &&
+          typeof business.freeDeliveryFrom === "number" ? (
+            <p className="mt-1 text-[11px] font-semibold leading-4 text-open">
+              Gratis desde {formatMoney(business.freeDeliveryFrom)}
+            </p>
+          ) : null}
           <div className="mt-4 flex items-start gap-2 text-xs text-muted">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-            {business.address}
+            <div>
+              <p>{business.address}</p>
+              {business.locationReference ? (
+                <p className="mt-1">Referencia: {business.locationReference}</p>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
@@ -269,12 +335,20 @@ export default function BusinessClient({ businessId }) {
           {business.description}
         </p>
         <p className="mt-3 text-xs text-muted">{business.address}</p>
+        {business.locationReference ? (
+          <p className="mt-1 text-xs text-muted">
+            Referencia: {business.locationReference}
+          </p>
+        ) : null}
         {businessArea ? (
           <p className="mt-1 text-xs text-muted">{businessArea}</p>
         ) : null}
         <p className="mt-1 text-xs text-muted">
-          {business.hasDelivery ? "Ofrece servicio de domicilio." : "Atención en el establecimiento."}
+          {business.hasDelivery
+            ? "Ofrece servicio de delivery."
+            : "No ofrece servicio de delivery."}
         </p>
+        {business.hasDelivery ? <DeliveryRates business={business} /> : null}
         <p className="mt-1 text-xs text-muted">{business.phone}</p>
       </div>
 

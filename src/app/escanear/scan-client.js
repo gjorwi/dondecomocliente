@@ -1,20 +1,68 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ScanLine, ScanQrCode } from "lucide-react";
+import { AlertCircle, Loader2, MapPin } from "lucide-react";
 import { BackLink, Pill } from "@/components/ui";
-import { useBusinesses } from "@/lib/hooks";
+import { QrScanner } from "@/components/qr-scanner";
+import { registerScan } from "@/lib/api";
+import { getCurrentLocation } from "@/lib/geolocation";
 import { saveScanSession } from "@/lib/scan-session";
+
+function extractBusinessId(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+
+  try {
+    const url = new URL(text, window.location.origin);
+    const match = url.pathname.match(/\/escanear\/([^/?#]+)/);
+    if (match) return decodeURIComponent(match[1]);
+  } catch {
+    // También aceptamos QRs que contengan solo el identificador del negocio.
+  }
+
+  return /^[a-z0-9][a-z0-9-]*$/i.test(text) ? text : "";
+}
 
 export default function ScanClient() {
   const router = useRouter();
-  const { businesses, isLoading } = useBusinesses();
-  const availableBusinesses = businesses.slice(0, 6);
+  const [error, setError] = useState("");
+  const [scannerKey, setScannerKey] = useState(0);
+  const [verifying, setVerifying] = useState(false);
 
-  const simulateScan = (businessId) => {
-    saveScanSession(businessId);
-    router.push(`/escanear/${businessId}`);
-  };
+  const handleResult = useCallback(
+    async (data) => {
+      if (verifying) return;
+
+      const businessId = extractBusinessId(data);
+      if (!businessId) {
+        setError("El QR no corresponde a un local de comidasTop. Intenta de nuevo.");
+        setScannerKey((current) => current + 1);
+        return;
+      }
+
+      setVerifying(true);
+      setError("");
+
+      try {
+        const location = await getCurrentLocation();
+        const payload = await registerScan(businessId, location);
+        saveScanSession(businessId, payload.visit);
+        router.push(`/escanear/${businessId}`);
+      } catch (scanError) {
+        setError(
+          scanError instanceof TypeError
+            ? "No pudimos conectar con la API. Verifica que esté activa e intenta de nuevo."
+            : scanError.message ||
+                "No pudimos validar tu ubicación. Intenta escanear de nuevo.",
+        );
+        setScannerKey((current) => current + 1);
+      } finally {
+        setVerifying(false);
+      }
+    },
+    [router, verifying],
+  );
 
   return (
     <div className="mx-auto max-w-lg">
@@ -28,75 +76,52 @@ export default function ScanClient() {
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted">
         El escaneo es la única forma de puntuar los platos del establecimiento.
+        Validaremos que estés en el local antes de habilitar tus votos.
       </p>
 
-      <section className="mt-6 overflow-hidden rounded-[32px] bg-ink px-5 py-8">
-        <div className="relative mx-auto flex aspect-square w-full max-w-[280px] items-center justify-center rounded-[28px] border border-white/15 bg-white/5">
-          <span className="absolute left-4 top-4 h-9 w-9 rounded-tl-xl border-l-[3px] border-t-[3px] border-mustard" />
-          <span className="absolute right-4 top-4 h-9 w-9 rounded-tr-xl border-r-[3px] border-t-[3px] border-mustard" />
-          <span className="absolute bottom-4 left-4 h-9 w-9 rounded-bl-xl border-b-[3px] border-l-[3px] border-mustard" />
-          <span className="absolute bottom-4 right-4 h-9 w-9 rounded-br-xl border-b-[3px] border-r-[3px] border-mustard" />
-          <ScanLine className="h-12 w-12 text-white/25" aria-hidden="true" />
-          <span className="scan-line absolute inset-x-8 top-1/2 h-0.5 rounded-full bg-accent shadow-[0_0_16px_#c9410f]" />
-        </div>
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs font-semibold text-white/70">
-          <span className="h-2 w-2 rounded-full bg-open" />
-          Apunta la cámara al código de la mesa
-        </div>
-      </section>
-
-      <section className="mt-4 rounded-[24px] bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <Pill tone="amber">Cámara simulada</Pill>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-            Demo
+      <section className="relative mt-6 rounded-[32px] bg-ink p-4 sm:p-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <Pill tone="amber">Cámara en vivo</Pill>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">
+            Escanea el QR de la mesa
           </span>
         </div>
-        <h2 className="mt-2 font-display text-xl tracking-[-0.03em] text-ink">
-          Elige un local para simular el QR
-        </h2>
-        <p className="mt-1.5 text-sm leading-6 text-muted">
-          Al seleccionarlo se abre la pantalla de puntuación de su menú.
-        </p>
+        <QrScanner key={scannerKey} onResult={handleResult} />
 
-        {availableBusinesses.length ? (
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {availableBusinesses.map((business) => (
-              <button
-                key={business.id}
-                type="button"
-                onClick={() => simulateScan(business.id)}
-                aria-label={`Simular escaneo del QR de ${business.name}`}
-                className="group flex items-center gap-3 rounded-2xl border border-line bg-soft p-3 text-left transition hover:border-accent/40 hover:bg-white"
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent-tint text-[24px]">
-                  {business.emoji || "🍽️"}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-ink">
-                    {business.name}
-                  </span>
-                  <span className="block text-[11px] text-muted">
-                    {business.zone} · Coro
-                  </span>
-                </span>
-                <ScanQrCode
-                  className="h-5 w-5 shrink-0 text-muted transition group-hover:text-accent"
-                  aria-hidden="true"
-                />
-              </button>
-            ))}
+        {verifying ? (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-[32px] bg-ink/85 px-6 text-center text-sm font-semibold text-white">
+            <Loader2 className="h-7 w-7 animate-spin text-mustard" aria-hidden="true" />
+            Validando que estés en el local…
           </div>
-        ) : (
-          <p className="mt-4 rounded-2xl bg-soft p-4 text-sm text-muted">
-            {isLoading ? "Cargando locales…" : "No hay locales disponibles ahora."}
-          </p>
-        )}
-
-        <p className="mt-4 text-[10px] leading-4 text-[#8a5a00]">
-          La puntuación solo se habilita después de este escaneo simulado.
-        </p>
+        ) : null}
       </section>
+
+      {error ? (
+        <div
+          role="alert"
+          className="mt-4 flex items-start gap-2 rounded-[20px] bg-accent-tint p-4 text-sm font-semibold leading-5 text-accent"
+        >
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          {error}
+        </div>
+      ) : null}
+
+      <div className="mt-4 flex items-start gap-2 rounded-[24px] bg-green-tint p-4 text-xs leading-5 text-open">
+        <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <p>
+          Al escanear permitimos <strong>2 votos</strong> durante las próximas{" "}
+          <strong>24 horas</strong>. La ubicación se usa solo para confirmar que
+          estás cerca del local.
+        </p>
+      </div>
+
+      <div className="mt-3 rounded-[24px] bg-amber-tint p-4 text-xs leading-5 text-[#6a4700]">
+        <p className="font-semibold">¿Dónde está el QR?</p>
+        <p className="mt-1">
+          Pídelo en el local o búscalo en la mesa. Al escanearlo se abrirá el
+          menú de ese negocio para que puedas puntuar sus platos.
+        </p>
+      </div>
     </div>
   );
 }

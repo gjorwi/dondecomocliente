@@ -34,12 +34,27 @@ export function getDeviceId() {
   }
 }
 
-export async function submitRating(productId, score) {
+export async function submitRating(productId, score, visitId) {
   const deviceId = getDeviceId();
   return apiFetch("/ratings", {
     method: "POST",
-    body: JSON.stringify({ productId, deviceId, score }),
+    body: JSON.stringify({ productId, deviceId, score, visitId }),
   });
+}
+
+export async function registerScan(businessId, location) {
+  const deviceId = getDeviceId();
+  return apiFetch(`/businesses/${businessId}/scan`, {
+    method: "POST",
+    body: JSON.stringify({ deviceId, location }),
+  });
+}
+
+export async function fetchScanStatus(businessId) {
+  const deviceId = getDeviceId();
+  return apiFetch(
+    `/businesses/${businessId}/scan?deviceId=${encodeURIComponent(deviceId)}`,
+  );
 }
 
 export async function submitBusinessRequest(data) {

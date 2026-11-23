@@ -47,7 +47,7 @@ export function AppShell({ children }) {
   };
 
   return (
-    <div className="min-h-dvh">
+    <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-40 border-b border-line bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex min-h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
           <Link
@@ -110,9 +110,67 @@ export function AppShell({ children }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-5 sm:px-6 md:pb-14">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-10 pt-5 sm:px-6">
         {children}
       </main>
+
+      <footer className="border-t border-white/10 bg-ink px-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-8 text-white sm:px-6 md:pb-10">
+        <div className="mx-auto grid w-full max-w-6xl gap-8 md:grid-cols-[1.5fr_1fr_1fr]">
+          <div>
+            <Link href="/" aria-label="comidasTop, ir al inicio" className="flex items-center gap-2">
+              <Image
+                src="/logo.jpg"
+                alt=""
+                width={40}
+                height={40}
+                className="h-9 w-9 rounded-full object-contain"
+              />
+              <span className="font-display text-[22px] leading-none tracking-[-0.05em]">
+                <span className="text-white">comidas</span>
+                <span className="text-accent">Top</span>
+              </span>
+            </Link>
+            <p className="mt-3 max-w-sm text-sm leading-6 text-white/70">
+              Descubre dónde comer en Coro, compara platos y encuentra tu
+              próximo antojo.
+            </p>
+            <p className="mt-3 flex items-center gap-1.5 text-xs text-white/60">
+              <MapPin className="h-3.5 w-3.5 text-mustard" aria-hidden="true" />
+              Coro, Falcón · Venezuela
+            </p>
+          </div>
+
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
+              Explorar
+            </p>
+            <div className="mt-3 flex flex-col items-start gap-2 text-sm">
+              <Link href="/" className="text-white/80 transition hover:text-white">Inicio</Link>
+              <Link href="/buscar" className="text-white/80 transition hover:text-white">Buscar</Link>
+              <Link href="/favoritos" className="text-white/80 transition hover:text-white">Favoritos</Link>
+              <Link href="/perfil" className="text-white/80 transition hover:text-white">Perfil</Link>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
+              ComidasTop
+            </p>
+            <div className="mt-3 flex flex-col items-start gap-2 text-sm">
+              <Link href="/solicitud-negocio" className="font-semibold text-mustard transition hover:text-white">
+                Registra tu negocio
+              </Link>
+              <Link href="/terminos" className="text-white/80 transition hover:text-white">Términos y Condiciones</Link>
+              <Link href="/privacidad" className="text-white/80 transition hover:text-white">Política de Privacidad</Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto mt-8 flex w-full max-w-6xl flex-col gap-1 border-t border-white/15 pt-5 text-[11px] text-white/45 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 comidasTop. Todos los derechos reservados.</p>
+          <p>Hecho para comer bien en Coro.</p>
+        </div>
+      </footer>
 
       <nav
         aria-label="Navegación inferior"

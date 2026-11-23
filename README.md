@@ -6,7 +6,7 @@ Aplicación web Next.js para descubrir platos y establecimientos de comida en Co
 
 - Inicio con búsqueda, promociones destacadas deslizables, tarjetas por categoría y locales recomendados.
 - Botón central de escaneo en la barra inferior para abrir el QR del local.
-- Flujo de escaneo simulado que da acceso a la pantalla de puntuación del menú.
+- Flujo de escaneo con validación de ubicación: habilita 2 votos durante 24 horas si el cliente está cerca del local.
 - Nueve categorías: hamburguesas, perros, arepas, pizzas, empanadas, enrollados, salchipapas, pollo frito y pollo asado.
 - Tarjetas de categoría con el plato mejor puntuado y acceso a su Top 3.
 - Búsqueda por plato, establecimiento, zona o categoría, con filtros expandibles de abierto y cercanía.

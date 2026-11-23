@@ -57,10 +57,13 @@ export function SavedProvider({ children }) {
       ready: true,
       isSaved: (id) => savedIds.includes(id),
       toggleSaved: (id) => {
-        const next = savedIds.includes(id)
-          ? savedIds.filter((item) => item !== id)
-          : [...savedIds, id];
         try {
+          const raw = window.localStorage.getItem(STORAGE_KEY) || "[]";
+          const parsed = JSON.parse(raw);
+          const current = Array.isArray(parsed) ? parsed : [];
+          const next = current.includes(id)
+            ? current.filter((item) => item !== id)
+            : [...current, id];
           window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         } catch {
           return;

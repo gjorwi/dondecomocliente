@@ -151,7 +151,7 @@ export function LocationPicker({ value, onChange }) {
       role="application"
       aria-label="Mapa para marcar la ubicación del negocio"
       aria-busy={!mapReady && !mapError}
-      className="relative h-[280px] w-full overflow-hidden rounded-[20px] border border-line bg-soft"
+      className="relative isolate z-0 h-[280px] w-full overflow-hidden rounded-[20px] border border-line bg-soft"
     >
       {!mapReady ? (
         <div className="pointer-events-none absolute inset-0 z-[1000] flex items-center justify-center bg-soft/90 px-4 text-center text-sm text-muted">

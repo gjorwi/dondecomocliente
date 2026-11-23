@@ -243,6 +243,23 @@ export function BusinessCard({ business }) {
         ) : (
           business.emoji || "🍽️"
         )}
+        {business.offeredCategories?.length ? (
+          <div className="absolute inset-x-2 bottom-2 flex flex-wrap gap-1">
+            {business.offeredCategories.slice(0, 3).map((category) => (
+              <span
+                key={category.id}
+                className="rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold leading-none text-ink shadow-sm backdrop-blur"
+              >
+                {category.label}
+              </span>
+            ))}
+            {business.offeredCategories.length > 3 ? (
+              <span className="rounded-full bg-ink/80 px-2 py-1 text-[10px] font-semibold leading-none text-white shadow-sm backdrop-blur">
+                +{business.offeredCategories.length - 3}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
       <div className="mt-3 flex min-h-0 flex-1 flex-col">
         <div className="flex items-start gap-1.5">
@@ -335,7 +352,7 @@ export function DishCard({ product }) {
   return (
     <Link
       href={`/plato/${product.id}`}
-      className="group flex h-[300px] flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
+      className="group flex self-start flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
     >
       <div className="relative flex h-32 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-amber-tint text-[54px]">
         {product.image ? (
@@ -356,7 +373,7 @@ export function DishCard({ product }) {
           </span>
         ) : null}
       </div>
-      <div className="mt-3 flex min-h-0 flex-1 flex-col">
+      <div className="mt-3 flex flex-col">
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-5 text-ink">
           {product.name}
         </h3>
@@ -364,7 +381,7 @@ export function DishCard({ product }) {
           {product.businessName || "Establecimiento"}
           {businessArea ? ` · ${businessArea}` : ""}
         </p>
-        <div className="mt-auto flex items-center justify-between gap-1.5 pt-2">
+        <div className="mt-2 flex items-center justify-between gap-1.5">
           <RatingLine
             score={score}
             count={product.ratingsCount}

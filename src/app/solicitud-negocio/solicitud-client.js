@@ -138,7 +138,7 @@ export default function BusinessRequestClient() {
       return 'Escribe el tipo de negocio en la opción "Otro".';
     }
     if (form.hasDelivery === null) {
-      return "Indica si el negocio hace domicilio.";
+      return "Indica si el negocio ofrece servicio de delivery.";
     }
     if (!coverImage) {
       return "Agrega una foto de portada del negocio.";
@@ -298,20 +298,20 @@ export default function BusinessRequestClient() {
 
           <div>
             <p className="text-sm font-semibold text-ink">
-              ¿Hace domicilio?<span className="ml-1 text-accent" aria-hidden="true">*</span>
+              ¿Ofrece servicio de delivery?<span className="ml-1 text-accent" aria-hidden="true">*</span>
             </p>
-            <div role="radiogroup" aria-label="¿Hace domicilio?" aria-required="true" className="mt-1.5 flex gap-2">
+            <div role="radiogroup" aria-label="¿Ofrece servicio de delivery?" aria-required="true" className="mt-1.5 flex gap-2">
               <ChoiceButton
                 selected={form.hasDelivery === true}
                 onClick={() => set("hasDelivery", true)}
               >
-                Sí, hace domicilio
+                Sí, hace delivery
               </ChoiceButton>
               <ChoiceButton
                 selected={form.hasDelivery === false}
                 onClick={() => set("hasDelivery", false)}
               >
-                No, solo en el local
+                No, sin delivery
               </ChoiceButton>
             </div>
           </div>

@@ -8,7 +8,6 @@ import {
   BusinessCard,
   CardGrid,
   CategoryCard,
-  Pill,
   SearchField,
   SectionTitle,
 } from "@/components/ui";
@@ -185,13 +184,6 @@ export default function ExploreClient() {
         </span>
       </Link>
 
-      <div className="mt-8 flex flex-col items-center gap-2 rounded-[24px] border border-line bg-white px-5 py-5 text-center">
-        <Pill tone="amber">Datos reales</Pill>
-        <p className="max-w-xl text-xs leading-5 text-muted">
-          La información y las puntuaciones se calculan con los datos
-          registrados por los establecimientos y sus clientes.
-        </p>
-      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Star } from "lucide-react";
 import {
   BackLink,
@@ -12,9 +13,15 @@ import {
 } from "@/components/ui";
 import { normalizeText } from "@/lib/text";
 import { getAdjustedProductScore } from "@/lib/scoring";
-import { submitRating } from "@/lib/api";
+import { submitRating, fetchScanStatus, registerScan } from "@/lib/api";
+import { getCurrentLocation } from "@/lib/geolocation";
 import { useBusiness, useCategories } from "@/lib/hooks";
-import { hasValidScanFor } from "@/lib/scan-session";
+import {
+  clearScanSession,
+  readScanSession,
+  saveScanSession,
+  updateScanSessionVotes,
+} from "@/lib/scan-session";
 
 function FilterChip({ children, selected, onClick }) {
   return (
@@ -37,6 +44,9 @@ export default function ScanRatingClient({ businessId }) {
   const { business, products, isLoading } = useBusiness(businessId);
   const { categories } = useCategories();
   const [scanAllowed, setScanAllowed] = useState(null);
+  const [scanError, setScanError] = useState("");
+  const [visitId, setVisitId] = useState(null);
+  const [votesRemaining, setVotesRemaining] = useState(0);
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState("todas");
   const [ratings, setRatings] = useState({});
@@ -44,7 +54,58 @@ export default function ScanRatingClient({ businessId }) {
   const [submittingId, setSubmittingId] = useState(null);
 
   useEffect(() => {
-    setScanAllowed(hasValidScanFor(businessId));
+    let active = true;
+    const session = readScanSession();
+    const valid =
+      session && session.businessId === businessId ? session : null;
+
+    if (!valid) {
+      setScanError("");
+      getCurrentLocation()
+        .then((location) => registerScan(businessId, location))
+        .then((payload) => {
+          if (!active) return;
+          saveScanSession(businessId, payload.visit);
+          setVisitId(payload.visit.id);
+          setVotesRemaining(payload.visit.votesRemaining);
+          setScanAllowed(true);
+        })
+        .catch((error) => {
+          if (!active) return;
+          setScanError(
+            error instanceof TypeError
+              ? "No pudimos conectar con la API. Verifica que esté activa e intenta de nuevo."
+              : error.message ||
+                  "No pudimos validar que estés en el local. Intenta de nuevo.",
+          );
+          setScanAllowed(false);
+        });
+    } else {
+      setScanAllowed(true);
+      setVisitId(valid.visitId || null);
+      setVotesRemaining(valid.votesRemaining ?? 0);
+
+      fetchScanStatus(businessId)
+        .then((payload) => {
+          if (!active) return;
+          if (!payload.visit) {
+            clearScanSession();
+            setScanAllowed(false);
+            setVotesRemaining(0);
+            return;
+          }
+          setVisitId(payload.visit.id);
+          setVotesRemaining(payload.visit.votesRemaining);
+          updateScanSessionVotes(businessId, payload.visit.votesRemaining);
+        })
+        .catch(() => {
+          // La validación definitiva también ocurre al enviar el voto.
+        });
+    }
+
+    return () => {
+      active = false;
+    };
   }, [businessId]);
 
   const categoryNames = useMemo(
@@ -80,17 +141,31 @@ export default function ScanRatingClient({ businessId }) {
   );
 
   const handleRate = async (product, value) => {
+    if (votesRemaining <= 0 || ratings[product.id] || submittingId) return;
+
     setSubmittingId(product.id);
     setMessages((current) => ({ ...current, [product.id]: null }));
 
     try {
-      await submitRating(product.id, value);
+      const payload = await submitRating(product.id, value, visitId);
+      const remaining =
+        typeof payload.visit?.votesRemaining === "number"
+          ? payload.visit.votesRemaining
+          : Math.max(0, votesRemaining - 1);
+
       setRatings((current) => ({ ...current, [product.id]: value }));
+      setVotesRemaining(remaining);
+      updateScanSessionVotes(businessId, remaining);
       setMessages((current) => ({
         ...current,
         [product.id]: {
           type: "success",
-          text: `Gracias. Registraste ${value} de 5 para este mes.`,
+          text:
+            remaining > 0
+              ? `Gracias. Registramos tu voto; te queda ${remaining} ${
+                  remaining === 1 ? "voto" : "votos"
+                } de este escaneo.`
+              : "Gracias. Usaste los 2 votos de este escaneo. Escanea el QR nuevamente para seguir puntuando otros platos.",
         },
       }));
     } catch (error) {
@@ -122,10 +197,25 @@ export default function ScanRatingClient({ businessId }) {
     return (
       <div className="mx-auto max-w-lg">
         <BackLink href="/escanear" label="Volver al escáner" />
+        {scanError ? (
+          <div
+            role="alert"
+            className="mb-4 rounded-[20px] bg-accent-tint p-4 text-sm font-semibold leading-5 text-accent"
+          >
+            {scanError}
+          </div>
+        ) : null}
         <EmptyState
           emoji="🔒"
-          title="Escanea el QR para puntuar"
-          description="Solo puedes puntuar los platos después de escanear el código QR del local."
+          title={
+            scanError
+              ? "No pudimos validar tu visita"
+              : "Necesitas un nuevo escaneo"
+          }
+          description={
+            scanError ||
+            "El escaneo anterior ya fue usado o venció. Vuelve a escanear el código QR del local para seguir puntuando."
+          }
           action="Abrir escáner"
           href="/escanear"
         />
@@ -165,17 +255,40 @@ export default function ScanRatingClient({ businessId }) {
             {business.emoji || "🍽️"}
           </span>
           <div className="min-w-0">
-            <Pill tone="open">Escaneo verificado</Pill>
+            <div className="flex flex-wrap items-center gap-2">
+              <Pill tone="open">Escaneo verificado</Pill>
+              <Pill tone={votesRemaining > 0 ? "amber" : "dark"}>
+                {votesRemaining > 0
+                  ? `${votesRemaining} de 2 votos disponibles`
+                  : "Sin votos disponibles"}
+              </Pill>
+            </div>
             <h1 className="mt-2 font-display text-[30px] leading-[1.05] tracking-[-0.04em] text-white sm:text-[36px]">
               Puntúa el menú de {business.name}
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/70">
-              Busca el plato que probaste y asígnale de 1 a 5 estrellas. Solo
-              está disponible después de escanear el QR del local.
+              Busca el plato que probaste y asígnale de 1 a 5 estrellas. Cada
+              plato admite un solo voto por dispositivo.
             </p>
           </div>
         </div>
       </section>
+
+      {votesRemaining === 0 ? (
+        <div className="mt-4 rounded-[24px] bg-amber-tint p-4 text-sm leading-6 text-[#6a4700]">
+          <p className="font-semibold">Usaste los 2 votos de este escaneo.</p>
+          <p className="mt-1 text-xs leading-5">
+            El escaneo queda como histórico. Para seguir puntuando otros platos,
+            vuelve a escanear el QR del local.
+          </p>
+          <Link
+            href="/escanear"
+            className="mt-3 inline-flex min-h-10 items-center rounded-full bg-accent px-4 text-xs font-semibold text-white transition hover:bg-[#b33a0d]"
+          >
+            Escanear de nuevo
+          </Link>
+        </div>
+      ) : null}
 
       <div className="mt-5">
         <SearchField
@@ -213,6 +326,13 @@ export default function ScanRatingClient({ businessId }) {
           filteredProducts.length === 1 ? "plato" : "platos"
         } para puntuar`}
       />
+
+      {votesRemaining === 0 && filteredProducts.length ? (
+        <p className="mb-3 rounded-2xl bg-soft p-3 text-xs leading-5 text-muted">
+          Puedes seguir viendo el menú, pero necesitas un nuevo escaneo para
+          votar por otros platos.
+        </p>
+      ) : null}
 
       {filteredProducts.length ? (
         <div className="grid gap-3">
@@ -270,7 +390,11 @@ export default function ScanRatingClient({ businessId }) {
                         key={value}
                         type="button"
                         onClick={() => handleRate(product, value)}
-                        disabled={submittingId === product.id}
+                        disabled={
+                          submittingId === product.id ||
+                          votesRemaining <= 0 ||
+                          Boolean(selectedRating)
+                        }
                         aria-pressed={selectedRating === value}
                         aria-label={`${value} de 5 estrellas para ${product.name}`}
                         className={`flex h-9 w-9 items-center justify-center rounded-full border transition disabled:opacity-50 ${
@@ -316,7 +440,8 @@ export default function ScanRatingClient({ businessId }) {
       )}
 
       <p className="mt-8 text-center text-xs text-muted">
-        Las puntuaciones se registran por plato. No se solicitan comentarios.
+        Cada plato se puede puntuar una sola vez por dispositivo. Cada escaneo
+        válido habilita 2 votos durante 24 horas.
       </p>
     </div>
   );

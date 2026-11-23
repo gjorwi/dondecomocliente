@@ -24,7 +24,7 @@ const sections = [
       "Para buscar negocios y ver sus menús no necesitas crear una cuenta ni entregar datos personales. En ese caso podemos tratar:",
       "Favoritos y preferencias de búsqueda, guardados solo en tu navegador (localStorage). No salen de tu dispositivo y puedes borrarlos desde la configuración del navegador.",
       "Tu dirección IP, usada de forma temporal para proteger el sitio contra abusos. No la asociamos a tu identidad.",
-      "Tu ubicación, únicamente si la autorizas en el navegador para centrar el mapa o completar la ubicación de un negocio. No la almacenamos vinculada a tu identidad.",
+      "Tu ubicación, únicamente si la autorizas en el navegador para centrar el mapa, completar la ubicación de un negocio o validar que estás en el local al escanear su QR. En el escaneo guardamos las coordenadas y un identificador anónimo del dispositivo para habilitar hasta 2 votos durante 24 horas; no la vinculamos a tu identidad.",
     ],
   },
   {
@@ -32,7 +32,7 @@ const sections = [
     paragraphs: [
       "Al enviar la solicitud de registro recopilamos:",
       "Datos del responsable: nombre, correo electrónico y teléfono / WhatsApp. Estos datos no se publican en el directorio.",
-      "Datos del negocio: nombre, categoría o tipo de negocio, si hace domicilio, municipio, parroquia, sector, dirección, ubicación marcada en el mapa, horario, descripción y fotografía de portada.",
+      "Datos del negocio: nombre, categoría o tipo de negocio, si ofrece delivery, tarifas de delivery, municipio, parroquia, sector, dirección, referencia de ubicación, ubicación marcada en el mapa, horario, descripción y fotografía de portada.",
       "Registro de tu aceptación: fecha y versión de los Términos y Condiciones y de esta política que aceptaste.",
       "Los datos del negocio se publican en el directorio una vez aprobada la ficha, porque ese es el propósito del registro.",
     ],
@@ -42,6 +42,7 @@ const sections = [
     paragraphs: [
       "Revisar y aprobar la solicitud, crear y administrar la cuenta del negocio y su menú.",
       "Publicar la ficha del negocio en el directorio, con su ubicación y la opción “Cómo llegar”.",
+      "Validar la visita al local cuando escaneas su QR y habilitar los votos disponibles.",
       "Contactarte sobre tu solicitud, tu cuenta o cambios en la plataforma.",
       "Generar estadísticas anónimas de uso y mejorar la plataforma.",
     ],
