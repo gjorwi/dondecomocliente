@@ -236,7 +236,9 @@ export default function BusinessClient({ businessId }) {
             <div>
               <p>{business.address}</p>
               {business.locationReference ? (
-                <p className="mt-1">Referencia: {business.locationReference}</p>
+                <p className="mt-1 whitespace-pre-line">
+                  Referencia: {business.locationReference}
+                </p>
               ) : null}
             </div>
           </div>
@@ -336,7 +338,7 @@ export default function BusinessClient({ businessId }) {
         </p>
         <p className="mt-3 text-xs text-muted">{business.address}</p>
         {business.locationReference ? (
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 whitespace-pre-line text-xs text-muted">
             Referencia: {business.locationReference}
           </p>
         ) : null}

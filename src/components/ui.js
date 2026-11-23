@@ -228,7 +228,7 @@ export function BusinessCard({ business }) {
   return (
     <Link
       href={`/local/${business.id}`}
-      className="group flex h-[300px] flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
+      className="group flex self-start flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
     >
       <div className="relative flex h-28 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-accent-tint text-[54px]">
         {business.coverImage ? (
@@ -243,25 +243,8 @@ export function BusinessCard({ business }) {
         ) : (
           business.emoji || "🍽️"
         )}
-        {business.offeredCategories?.length ? (
-          <div className="absolute inset-x-2 bottom-2 flex flex-wrap gap-1">
-            {business.offeredCategories.slice(0, 3).map((category) => (
-              <span
-                key={category.id}
-                className="rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold leading-none text-ink shadow-sm backdrop-blur"
-              >
-                {category.label}
-              </span>
-            ))}
-            {business.offeredCategories.length > 3 ? (
-              <span className="rounded-full bg-ink/80 px-2 py-1 text-[10px] font-semibold leading-none text-white shadow-sm backdrop-blur">
-                +{business.offeredCategories.length - 3}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
       </div>
-      <div className="mt-3 flex min-h-0 flex-1 flex-col">
+      <div className="mt-3 flex flex-col">
         <div className="flex items-start gap-1.5">
           <h3 className="line-clamp-2 text-[15px] font-semibold leading-5 text-ink">
             {business.name}
@@ -279,7 +262,24 @@ export function BusinessCard({ business }) {
         <p className="mt-1 line-clamp-2 text-[12px] leading-4 text-muted">
           {business.description}
         </p>
-        <div className="mt-auto flex items-center justify-between gap-1.5 pt-2">
+        {business.offeredCategories?.length ? (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {business.offeredCategories.slice(0, 3).map((category) => (
+              <span
+                key={category.id}
+                className="rounded-full bg-beige px-2 py-1 text-[10px] font-semibold leading-none text-ink"
+              >
+                {category.label}
+              </span>
+            ))}
+            {business.offeredCategories.length > 3 ? (
+              <span className="rounded-full bg-ink px-2 py-1 text-[10px] font-semibold leading-none text-white">
+                +{business.offeredCategories.length - 3}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+        <div className="mt-3 flex items-center justify-between gap-1.5">
           <RatingLine score={score} count={ratingsCount} compact />
           <Pill tone={business.isOpen ? "open" : "dark"}>
             {business.isOpen ? "Abierto" : "Cerrado"}
