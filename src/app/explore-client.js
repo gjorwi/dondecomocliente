@@ -7,21 +7,61 @@ import { ArrowRight, Store } from "lucide-react";
 import {
   BusinessCard,
   CardGrid,
-  CategoryCard,
+  Pill,
   SearchField,
   SectionTitle,
 } from "@/components/ui";
+import { CategoryChips, TopThreePodium } from "@/components/podium";
 import { PromoCarousel } from "@/components/promo-carousel";
-import { useBusinesses, useCategories, usePromotions } from "@/lib/hooks";
+import { demoCategories, demoRanking } from "@/lib/demo-ranking";
+import {
+  useBusinesses,
+  useCategories,
+  usePromotions,
+  useRanking,
+} from "@/lib/hooks";
 
 export default function ExploreClient() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const { categories, isLoading: categoriesLoading } = useCategories();
   const { businesses, isLoading: businessesLoading } = useBusinesses();
   const { promotions, isLoading: promotionsLoading } = usePromotions();
-  const featuredCategories = categories.filter((category) => category.top);
+
+  const realCategories = categories
+    .filter((category) => category.top)
+    .map((category) => ({
+      id: category.id,
+      label: category.label,
+      image: category.image,
+    }));
+  const showPreview = !categoriesLoading && realCategories.length === 0;
+  const chipCategories = showPreview ? demoCategories : realCategories;
+  const activeCategoryId =
+    selectedCategoryId &&
+    chipCategories.some((category) => category.id === selectedCategoryId)
+      ? selectedCategoryId
+      : chipCategories[0]?.id ?? null;
+  const {
+    ranking,
+    isLoading: rankingLoading,
+    error: rankingError,
+  } = useRanking(activeCategoryId);
+  const demoEntries = activeCategoryId
+    ? demoRanking[activeCategoryId] || []
+    : [];
+  const usingDemo =
+    !rankingLoading &&
+    (Boolean(rankingError) || ranking.length === 0) &&
+    demoEntries.length > 0;
+  const podiumEntries = ranking.length ? ranking : demoEntries;
+  const activeCategory = chipCategories.find(
+    (category) => category.id === activeCategoryId,
+  );
+  const activeCategoryLabel = activeCategory?.label || "";
+  const activeCategoryImage = activeCategory?.image;
 
   const recommendedBusinesses = useMemo(
     () =>
@@ -79,22 +119,53 @@ export default function ExploreClient() {
 
       <SectionTitle
         title="Mejores por categoría"
-        description="Solo mostramos categorías con calificaciones suficientes. Toca una para ver su Top 3."
+        description="Los tres mejor puntuados de cada categoría. Elige una para ver su podio."
+        action={activeCategoryId ? "Ver todos" : undefined}
+        href={activeCategoryId ? `/categoria/${activeCategoryId}` : undefined}
       />
       {categoriesLoading ? (
         <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
           Cargando categorías…
         </div>
-      ) : featuredCategories.length ? (
-        <CardGrid>
-          {featuredCategories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
-          ))}
-        </CardGrid>
+      ) : chipCategories.length ? (
+        <>
+          <CategoryChips
+            categories={chipCategories}
+            activeId={activeCategoryId}
+            onSelect={setSelectedCategoryId}
+          />
+
+          <div className="mt-4">
+            {rankingLoading ? (
+              <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
+                Cargando podio…
+              </div>
+            ) : podiumEntries.length ? (
+              <TopThreePodium
+                entries={podiumEntries}
+                demo={usingDemo}
+                categoryId={activeCategoryId}
+                categoryLabel={activeCategoryLabel}
+                categoryImage={activeCategoryImage}
+              />
+            ) : (
+              <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
+                Aún no hay suficientes puntuaciones en esta categoría.
+              </div>
+            )}
+          </div>
+
+          {usingDemo ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs leading-5 text-muted">
+              <Pill tone="amber">Vista previa</Pill>
+              Datos de ejemplo mientras llegan las primeras puntuaciones
+              reales.
+            </div>
+          ) : null}
+        </>
       ) : (
         <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
-          Aún no hay categorías con calificaciones suficientes para mostrar un
-          Top.
+          Aún no hay categorías disponibles para mostrar un Top.
         </div>
       )}
 

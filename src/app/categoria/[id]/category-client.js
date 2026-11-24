@@ -3,12 +3,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Info } from "lucide-react";
-import { BackLink, DishRow, EmptyState, Pill } from "@/components/ui";
+import { BackLink, EmptyState, Pill } from "@/components/ui";
+import { CategoryChips, TopThreePodium } from "@/components/podium";
+import { demoCategories, demoRanking } from "@/lib/demo-ranking";
 import { MIN_RATINGS_FOR_RANKING } from "@/lib/scoring";
-import { useRanking } from "@/lib/hooks";
+import { useCategories, useRanking } from "@/lib/hooks";
 
 export default function CategoryClient({ categoryId }) {
   const { category, ranking, isLoading } = useRanking(categoryId);
+  const { categories } = useCategories();
+
+  const chipCategories = categories.length
+    ? categories.map((item) => ({
+        id: item.id,
+        label: item.label,
+        image: item.image,
+      }))
+    : demoCategories;
+  const demoEntries = demoRanking[categoryId] || [];
+  const usingDemo = !isLoading && ranking.length === 0 && demoEntries.length > 0;
+  const podiumEntries = ranking.length ? ranking : demoEntries;
 
   if (isLoading && !category) {
     return (
@@ -57,32 +71,45 @@ export default function CategoryClient({ categoryId }) {
         </div>
       </section>
 
-      {ranking.length > 0 ? (
-        <div className="mt-5 overflow-hidden rounded-[24px] bg-soft px-4">
-          {ranking.map((entry, index) => {
-            const product = entry.product || entry;
-            const rank = entry.position || index + 1;
+      <div className="mt-5">
+        <CategoryChips
+          categories={chipCategories}
+          activeId={categoryId}
+          hrefFor={(item) => `/categoria/${item.id}`}
+        />
+      </div>
 
-            return (
-              <div
-                key={product.id || `rank-${rank}`}
-                className={index > 0 ? "border-t border-line" : ""}
-              >
-                <DishRow product={product} rank={rank} />
+      <div className="mt-4">
+        {isLoading && !ranking.length ? (
+          <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
+            Cargando podio…
+          </div>
+        ) : podiumEntries.length ? (
+          <>
+            <TopThreePodium
+              entries={podiumEntries}
+              demo={usingDemo}
+              categoryId={categoryId}
+              categoryLabel={category.label}
+              categoryImage={category.image}
+            />
+            {usingDemo ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs leading-5 text-muted">
+                <Pill tone="amber">Vista previa</Pill>
+                Datos de ejemplo mientras se acumulan las primeras
+                puntuaciones reales.
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="mt-5">
+            ) : null}
+          </>
+        ) : (
           <EmptyState
             title="Aún no hay suficientes puntuaciones"
             description={`Para aparecer en este ranking, un plato necesita al menos ${MIN_RATINGS_FOR_RANKING} puntuaciones.`}
             action="Explorar otras categorías"
             href="/"
           />
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="mt-5 flex items-start gap-3 rounded-[24px] bg-white p-4 shadow-sm">
         <Info className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden="true" />

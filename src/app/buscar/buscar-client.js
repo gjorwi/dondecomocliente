@@ -2,7 +2,13 @@
 
 import { Suspense, useMemo, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
-import { ChevronDown, Clock3, Navigation, SlidersHorizontal } from "lucide-react";
+import {
+  ArrowDownWideNarrow,
+  ChevronDown,
+  Clock3,
+  Navigation,
+  SlidersHorizontal,
+} from "lucide-react";
 import {
   BusinessCard,
   CardGrid,
@@ -88,6 +94,7 @@ function SearchContent({ initialQuery, initialCategory }) {
   const [categoryId, setCategoryId] = useState(initialCategory);
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [nearMe, setNearMe] = useState(false);
+  const [lowestPrice, setLowestPrice] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState("");
   const [locationLoading, setLocationLoading] = useState(false);
@@ -110,15 +117,27 @@ function SearchContent({ initialQuery, initialCategory }) {
     (type !== "todo" ? 1 : 0) +
     (categoryId !== "todos" ? 1 : 0) +
     (onlyOpen ? 1 : 0) +
-    (nearMe ? 1 : 0);
+    (nearMe ? 1 : 0) +
+    (lowestPrice ? 1 : 0);
 
   const clearFilters = () => {
     setType("todo");
     setCategoryId("todos");
     setOnlyOpen(false);
     setNearMe(false);
+    setLowestPrice(false);
     setUserLocation(null);
     setLocationError("");
+  };
+
+  const toggleLowestPrice = () => {
+    const next = !lowestPrice;
+    setLowestPrice(next);
+    if (next) {
+      setNearMe(false);
+      setUserLocation(null);
+      setLocationError("");
+    }
   };
 
   const toggleNearMe = () => {
@@ -139,6 +158,7 @@ function SearchContent({ initialQuery, initialCategory }) {
       ({ coords }) => {
         setUserLocation({ lat: coords.latitude, lng: coords.longitude });
         setNearMe(true);
+        setLowestPrice(false);
         setLocationLoading(false);
       },
       () => {
@@ -170,6 +190,14 @@ function SearchContent({ initialQuery, initialCategory }) {
     });
 
     return list.sort((a, b) => {
+      if (lowestPrice) {
+        const priceA = Number(a.price);
+        const priceB = Number(b.price);
+        const priceDiff =
+          (Number.isFinite(priceA) && priceA > 0 ? priceA : Infinity) -
+          (Number.isFinite(priceB) && priceB > 0 ? priceB : Infinity);
+        if (priceDiff) return priceDiff;
+      }
       const scoreDiff =
         getAdjustedProductScore(b) - getAdjustedProductScore(a);
       if (!nearMe) return scoreDiff;
@@ -178,7 +206,16 @@ function SearchContent({ initialQuery, initialCategory }) {
         getDistanceKm(businessMap.get(b.businessId), userLocation);
       return distanceDiff || scoreDiff;
     });
-  }, [businessMap, categoryId, nearMe, normalizedQuery, onlyOpen, products, userLocation]);
+  }, [
+    businessMap,
+    categoryId,
+    lowestPrice,
+    nearMe,
+    normalizedQuery,
+    onlyOpen,
+    products,
+    userLocation,
+  ]);
 
   const filteredBusinesses = useMemo(() => {
     const list = businesses.filter((business) => {
@@ -200,14 +237,32 @@ function SearchContent({ initialQuery, initialCategory }) {
       );
     });
 
-    if (nearMe) {
+    if (lowestPrice) {
+      const cheapestProductPrice = (business) => {
+        const prices = products
+          .filter((product) => product.businessId === business.id)
+          .map((product) => Number(product.price))
+          .filter((price) => Number.isFinite(price) && price > 0);
+        return prices.length ? Math.min(...prices) : Number.POSITIVE_INFINITY;
+      };
+      list.sort((a, b) => cheapestProductPrice(a) - cheapestProductPrice(b));
+    } else if (nearMe) {
       list.sort(
         (a, b) =>
           getDistanceKm(a, userLocation) - getDistanceKm(b, userLocation),
       );
     }
     return list;
-  }, [businesses, categoryId, nearMe, normalizedQuery, onlyOpen, products, userLocation]);
+  }, [
+    businesses,
+    categoryId,
+    lowestPrice,
+    nearMe,
+    normalizedQuery,
+    onlyOpen,
+    products,
+    userLocation,
+  ]);
 
   const showProducts = type !== "locales";
   const showBusinesses = type !== "platos";
@@ -360,6 +415,23 @@ function SearchContent({ initialQuery, initialCategory }) {
               {locationLoading ? "Buscando…" : nearMe ? "Activo" : "Ordenar"}
             </span>
           </button>
+
+          <button
+            type="button"
+            onClick={toggleLowestPrice}
+            aria-pressed={lowestPrice}
+            className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${
+              lowestPrice
+                ? "border-accent bg-accent-tint text-accent"
+                : "border-line bg-white text-ink hover:bg-soft"
+            }`}
+          >
+            <ArrowDownWideNarrow className="h-4 w-4" aria-hidden="true" />
+            Menor precio
+            <span className="text-xs font-normal text-muted">
+              {lowestPrice ? "Activo" : "Ordenar"}
+            </span>
+          </button>
         </div>
       </div>
       {locationError ? (
@@ -390,7 +462,11 @@ function SearchContent({ initialQuery, initialCategory }) {
           <SectionTitle
             title="Platos"
             description={`${filteredProducts.length} resultados${
-              nearMe ? " · más cercanos primero" : ""
+              lowestPrice
+                ? " · menor precio primero"
+                : nearMe
+                  ? " · más cercanos primero"
+                  : ""
             }`}
           />
           <CardGrid>
@@ -406,7 +482,11 @@ function SearchContent({ initialQuery, initialCategory }) {
           <SectionTitle
             title="Establecimientos"
             description={`${filteredBusinesses.length} resultados${
-              nearMe ? " · más cercanos primero" : ""
+              lowestPrice
+                ? " · menor precio primero"
+                : nearMe
+                  ? " · más cercanos primero"
+                  : ""
             }`}
           />
           <CardGrid>

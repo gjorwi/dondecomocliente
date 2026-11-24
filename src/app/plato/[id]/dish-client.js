@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Heart } from "lucide-react";
 import { BackLink, EmptyState, Pill, RatingLine } from "@/components/ui";
 import { getAdjustedProductScore, MIN_RATINGS_FOR_RANKING } from "@/lib/scoring";
+import { formatMoney, getPriceRows } from "@/lib/price";
 import { useProduct } from "@/lib/hooks";
 import { useSaved } from "@/components/saved-provider";
 
@@ -35,6 +36,9 @@ export default function DishClient({ productId }) {
   }
 
   const score = getAdjustedProductScore(product);
+  const priceRows = getPriceRows(product);
+  const hasSizePricing = priceRows.some((row) => row.key !== "unique");
+  const uniquePrice = priceRows.find((row) => row.key === "unique");
   const savedKey = `dish:${product.id}`;
   const saved = isSaved(savedKey);
 
@@ -106,13 +110,40 @@ export default function DishClient({ productId }) {
             </p>
           </div>
 
-          <div className="mt-5 flex items-start justify-between gap-4">
+          <div className="mt-5">
             <p className="max-w-xl text-sm leading-6 text-muted">
               {product.description}
             </p>
-            <p className="shrink-0 font-display text-2xl text-accent">
-              ${product.price.toFixed(2)}
-            </p>
+
+            {hasSizePricing ? (
+              <div className="mt-3 rounded-[24px] bg-soft p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                  Precios por tamaño
+                </p>
+                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                  {priceRows.map((row) => (
+                    <div
+                      key={row.key}
+                      className="flex items-center justify-between gap-2 rounded-2xl bg-white px-3 py-2"
+                    >
+                      <span className="text-xs text-muted">{row.label}</span>
+                      <span className="text-sm font-semibold text-ink">
+                        {formatMoney(row.value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : uniquePrice ? (
+              <div className="mt-3 flex items-center justify-between gap-4 rounded-[24px] bg-soft px-4 py-3">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                  Precio
+                </span>
+                <span className="font-display text-2xl text-accent">
+                  {formatMoney(uniquePrice.value)}
+                </span>
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">

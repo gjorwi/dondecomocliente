@@ -13,6 +13,7 @@ import {
 } from "@/components/ui";
 import { normalizeText } from "@/lib/text";
 import { getAdjustedProductScore } from "@/lib/scoring";
+import { formatPriceSummary } from "@/lib/price";
 import { submitRating, fetchScanStatus, registerScan } from "@/lib/api";
 import { getCurrentLocation } from "@/lib/geolocation";
 import { useBusiness, useCategories } from "@/lib/hooks";
@@ -342,6 +343,7 @@ export default function ScanRatingClient({ businessId }) {
             const score = getAdjustedProductScore(product);
             const categoryLabel =
               categoryNames.get(product.categoryId) || product.categoryId;
+            const priceSummary = formatPriceSummary(product);
 
             return (
               <article
@@ -358,9 +360,7 @@ export default function ScanRatingClient({ businessId }) {
                     </h3>
                     <p className="mt-0.5 text-[11px] text-muted">
                       {categoryLabel}
-                      {typeof product.price === "number"
-                        ? ` · $${product.price.toFixed(2)}`
-                        : ""}
+                      {priceSummary ? ` · ${priceSummary}` : ""}
                     </p>
                     <div className="mt-1.5">
                       <RatingLine

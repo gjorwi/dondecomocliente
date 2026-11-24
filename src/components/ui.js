@@ -8,6 +8,11 @@ import {
   Star,
 } from "lucide-react";
 import { formatScore, getAdjustedProductScore } from "@/lib/scoring";
+import {
+  formatPriceSummary,
+  getProductPrices,
+  hasSizePrices,
+} from "@/lib/price";
 
 const pillTones = {
   beige: "bg-beige text-ink",
@@ -345,6 +350,8 @@ export function PromoCard({ promotion }) {
 
 export function DishCard({ product }) {
   const score = getAdjustedProductScore(product);
+  const priceSummary = formatPriceSummary(product);
+  const sizePricing = hasSizePrices(getProductPrices(product));
   const businessArea = [product.businessMunicipality, product.businessParish, product.businessSector]
     .filter(Boolean)
     .join(" · ");
@@ -387,12 +394,17 @@ export function DishCard({ product }) {
             count={product.ratingsCount}
             compact
           />
-          {typeof product.price === "number" ? (
+          {!sizePricing && priceSummary ? (
             <span className="text-[13px] font-semibold text-ink">
-              ${product.price.toFixed(2)}
+              {priceSummary}
             </span>
           ) : null}
         </div>
+        {sizePricing && priceSummary ? (
+          <p className="mt-1 text-right text-[11px] font-semibold leading-4 text-ink">
+            {priceSummary}
+          </p>
+        ) : null}
       </div>
     </Link>
   );
