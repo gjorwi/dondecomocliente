@@ -45,29 +45,20 @@ export default function ExploreClient() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">
               Coro · Falcón
             </p>
-            <h1 className="mt-3 font-display text-[38px] leading-[1.02] tracking-[-0.045em] sm:text-[52px]">
+            <h1 className="mt-3 whitespace-nowrap font-display text-[clamp(20px,7.2vw,52px)] leading-[1.02] tracking-[-0.045em]">
               ¿Qué se te antoja hoy?
             </h1>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-white/80 sm:text-[15px]">
-              Encuentra platos bien puntuados, compara la reputación de cada
-              establecimiento y contacta directamente con el local.
-            </p>
           </div>
-          <div className="mt-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">
-              Buscar por categoría
-            </p>
-            <div className="no-scrollbar mt-2.5 flex w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/buscar?categoria=${category.id}`}
-                  className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-white/15 bg-white/12 px-3.5 text-xs font-semibold text-white transition hover:bg-white/20"
-                >
-                  {category.label}
-                </Link>
-              ))}
-            </div>
+          <div className="no-scrollbar mt-5 flex w-full flex-nowrap gap-2 overflow-x-auto pb-1">
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/buscar?categoria=${category.id}`}
+                className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-white/15 bg-white/12 px-3.5 text-xs font-semibold text-white transition hover:bg-white/20"
+              >
+                {category.label}
+              </Link>
+            ))}
           </div>
         </div>
         <span className="pointer-events-none absolute -right-12 -top-10 hidden text-[190px] opacity-20 sm:block">
@@ -80,7 +71,7 @@ export default function ExploreClient() {
           value={query}
           onChange={setQuery}
           onSubmit={openSearch}
-          placeholder="¿Qué quieres comer? Busca un plato o local"
+          placeholder="¿Qué quieres comer?"
         />
       </div>
 
@@ -156,26 +147,22 @@ export default function ExploreClient() {
 
       <Link
         href="/solicitud-negocio"
-        className="group mt-8 flex flex-col gap-4 rounded-[28px] bg-accent p-6 text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-7"
+        className="group mt-8 flex flex-col gap-5 rounded-[28px] bg-accent p-6 text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-7"
       >
-        <div className="flex items-start gap-4">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15">
-            <Store className="h-7 w-7" aria-hidden="true" />
+        <div className="flex items-center gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 sm:h-14 sm:w-14">
+            <Store className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden="true" />
           </span>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
               Para negocios
             </p>
-            <h2 className="mt-1 font-display text-[26px] leading-tight tracking-[-0.035em]">
+            <h2 className="mt-1 font-display text-[22px] leading-tight tracking-[-0.035em] sm:text-[26px]">
               ¿Tienes un negocio de comida?
             </h2>
-            <p className="mt-1 max-w-xl text-sm leading-6 text-white/80">
-              Solicita tu registro y aparece en comidasTop. Revisamos cada
-              solicitud y te entregamos tus accesos para administrar tu menú.
-            </p>
           </div>
         </div>
-        <span className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-accent">
+        <span className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-accent sm:w-auto">
           Solicitar registro
           <ArrowRight
             className="h-4 w-4 transition group-hover:translate-x-0.5"
