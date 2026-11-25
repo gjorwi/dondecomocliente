@@ -6,18 +6,20 @@ export const demoCategories = [
   },
   { id: "arepas", label: "Arepas", image: "/iconos/AREPAS.png" },
   { id: "pizzas", label: "Pizzas", image: "/iconos/PIZZAS.png" },
-  {
-    id: "pollo-frito",
-    label: "Pollo frito",
-    image: "/iconos/POLLO_FRITO.png",
-  },
 ];
+
+// Cada categoría de prueba ejemplifica un escenario distinto del podio.
+const demoScenarioLimits = {
+  hamburguesas: 3,
+  arepas: 2,
+  pizzas: 1,
+};
 
 function demoProduct(id, name, emoji, price, score, ratingsCount) {
   return { id, name, emoji, image: "", price, score, ratingsCount };
 }
 
-export const demoRanking = {
+const demoRanking = {
   hamburguesas: [
     {
       position: 1,
@@ -122,3 +124,9 @@ export const demoRanking = {
     },
   ],
 };
+
+export function getDemoRanking(categoryId) {
+  const entries = demoRanking[categoryId] || [];
+  const limit = demoScenarioLimits[categoryId] ?? entries.length;
+  return entries.slice(0, limit);
+}

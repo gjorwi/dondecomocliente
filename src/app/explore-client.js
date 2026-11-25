@@ -13,7 +13,7 @@ import {
 } from "@/components/ui";
 import { CategoryChips, TopThreePodium } from "@/components/podium";
 import { PromoCarousel } from "@/components/promo-carousel";
-import { demoCategories, demoRanking } from "@/lib/demo-ranking";
+import { demoCategories, getDemoRanking } from "@/lib/demo-ranking";
 import {
   useBusinesses,
   useCategories,
@@ -48,9 +48,9 @@ export default function ExploreClient() {
     ranking,
     isLoading: rankingLoading,
     error: rankingError,
-  } = useRanking(activeCategoryId);
+  } = useRanking(showPreview ? null : activeCategoryId);
   const demoEntries = activeCategoryId
-    ? demoRanking[activeCategoryId] || []
+    ? getDemoRanking(activeCategoryId)
     : [];
   const usingDemo =
     !rankingLoading &&
@@ -119,7 +119,11 @@ export default function ExploreClient() {
 
       <SectionTitle
         title="Mejores por categoría"
-        description="Los tres mejor puntuados de cada categoría. Elige una para ver su podio."
+        description={
+          showPreview
+            ? "Así se ve el podio con 3, 2 o 1 plato clasificado."
+            : "Los tres mejor puntuados de cada categoría. Elige una para ver su podio."
+        }
         action={activeCategoryId ? "Ver todos" : undefined}
         href={activeCategoryId ? `/categoria/${activeCategoryId}` : undefined}
       />
@@ -137,9 +141,11 @@ export default function ExploreClient() {
 
           <div className="mt-4">
             {rankingLoading ? (
-              <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
-                Cargando podio…
-              </div>
+              <TopThreePodium
+                loading
+                categoryLabel={activeCategoryLabel}
+                categoryImage={activeCategoryImage}
+              />
             ) : podiumEntries.length ? (
               <TopThreePodium
                 entries={podiumEntries}
@@ -155,13 +161,21 @@ export default function ExploreClient() {
             )}
           </div>
 
-          {usingDemo ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs leading-5 text-muted">
-              <Pill tone="amber">Vista previa</Pill>
-              Datos de ejemplo mientras llegan las primeras puntuaciones
-              reales.
-            </div>
-          ) : null}
+          <div className="mt-3 flex min-h-10 flex-wrap items-center gap-2 text-xs leading-5 text-muted sm:min-h-6">
+            {usingDemo ? (
+              <>
+                <Pill tone="amber">Vista previa</Pill>
+                <span>
+                  {podiumEntries.length}{" "}
+                  {podiumEntries.length === 1
+                    ? "plato clasificado"
+                    : "platos clasificados"}{" "}
+                  · Datos de ejemplo mientras llegan las primeras puntuaciones
+                  reales.
+                </span>
+              </>
+            ) : null}
+          </div>
         </>
       ) : (
         <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">

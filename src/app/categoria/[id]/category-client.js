@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Info } from "lucide-react";
 import { BackLink, EmptyState, Pill } from "@/components/ui";
 import { CategoryChips, TopThreePodium } from "@/components/podium";
-import { demoCategories, demoRanking } from "@/lib/demo-ranking";
+import { demoCategories, getDemoRanking } from "@/lib/demo-ranking";
 import { MIN_RATINGS_FOR_RANKING } from "@/lib/scoring";
 import { useCategories, useRanking } from "@/lib/hooks";
 
@@ -20,7 +20,7 @@ export default function CategoryClient({ categoryId }) {
         image: item.image,
       }))
     : demoCategories;
-  const demoEntries = demoRanking[categoryId] || [];
+  const demoEntries = getDemoRanking(categoryId);
   const usingDemo = !isLoading && ranking.length === 0 && demoEntries.length > 0;
   const podiumEntries = ranking.length ? ranking : demoEntries;
 
@@ -81,9 +81,11 @@ export default function CategoryClient({ categoryId }) {
 
       <div className="mt-4">
         {isLoading && !ranking.length ? (
-          <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
-            Cargando podio…
-          </div>
+          <TopThreePodium
+            loading
+            categoryLabel={category.label}
+            categoryImage={category.image}
+          />
         ) : podiumEntries.length ? (
           <>
             <TopThreePodium
@@ -93,13 +95,21 @@ export default function CategoryClient({ categoryId }) {
               categoryLabel={category.label}
               categoryImage={category.image}
             />
-            {usingDemo ? (
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs leading-5 text-muted">
-                <Pill tone="amber">Vista previa</Pill>
-                Datos de ejemplo mientras se acumulan las primeras
-                puntuaciones reales.
-              </div>
-            ) : null}
+            <div className="mt-3 flex min-h-10 flex-wrap items-center gap-2 text-xs leading-5 text-muted sm:min-h-6">
+              {usingDemo ? (
+                <>
+                  <Pill tone="amber">Vista previa</Pill>
+                  <span>
+                    {podiumEntries.length}{" "}
+                    {podiumEntries.length === 1
+                      ? "plato clasificado"
+                      : "platos clasificados"}{" "}
+                    · Datos de ejemplo mientras se acumulan las primeras
+                    puntuaciones reales.
+                  </span>
+                </>
+              ) : null}
+            </div>
           </>
         ) : (
           <EmptyState
