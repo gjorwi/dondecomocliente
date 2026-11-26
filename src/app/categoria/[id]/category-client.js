@@ -4,25 +4,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Info } from "lucide-react";
 import { BackLink, EmptyState, Pill } from "@/components/ui";
-import { CategoryChips, TopThreePodium } from "@/components/podium";
-import { demoCategories, getDemoRanking } from "@/lib/demo-ranking";
+import {
+  CategoryChips,
+  CategoryChipsSkeleton,
+  TopThreePodium,
+} from "@/components/podium";
 import { MIN_RATINGS_FOR_RANKING } from "@/lib/scoring";
 import { useCategories, useRanking } from "@/lib/hooks";
 
 export default function CategoryClient({ categoryId }) {
   const { category, ranking, isLoading } = useRanking(categoryId);
-  const { categories } = useCategories();
+  const { categories, isLoading: categoriesLoading } = useCategories();
 
-  const chipCategories = categories.length
-    ? categories.map((item) => ({
-        id: item.id,
-        label: item.label,
-        image: item.image,
-      }))
-    : demoCategories;
-  const demoEntries = getDemoRanking(categoryId);
-  const usingDemo = !isLoading && ranking.length === 0 && demoEntries.length > 0;
-  const podiumEntries = ranking.length ? ranking : demoEntries;
+  const chipCategories = categories.map((item) => ({
+    id: item.id,
+    label: item.label,
+    image: item.image,
+  }));
 
   if (isLoading && !category) {
     return (
@@ -72,11 +70,15 @@ export default function CategoryClient({ categoryId }) {
       </section>
 
       <div className="mt-5">
-        <CategoryChips
-          categories={chipCategories}
-          activeId={categoryId}
-          hrefFor={(item) => `/categoria/${item.id}`}
-        />
+        {categoriesLoading ? (
+          <CategoryChipsSkeleton light />
+        ) : (
+          <CategoryChips
+            categories={chipCategories}
+            activeId={categoryId}
+            hrefFor={(item) => `/categoria/${item.id}`}
+          />
+        )}
       </div>
 
       <div className="mt-4">
@@ -86,31 +88,12 @@ export default function CategoryClient({ categoryId }) {
             categoryLabel={category.label}
             categoryImage={category.image}
           />
-        ) : podiumEntries.length ? (
-          <>
-            <TopThreePodium
-              entries={podiumEntries}
-              demo={usingDemo}
-              categoryId={categoryId}
-              categoryLabel={category.label}
-              categoryImage={category.image}
-            />
-            <div className="mt-3 flex min-h-10 flex-wrap items-center gap-2 text-xs leading-5 text-muted sm:min-h-6">
-              {usingDemo ? (
-                <>
-                  <Pill tone="amber">Vista previa</Pill>
-                  <span>
-                    {podiumEntries.length}{" "}
-                    {podiumEntries.length === 1
-                      ? "plato clasificado"
-                      : "platos clasificados"}{" "}
-                    · Datos de ejemplo mientras se acumulan las primeras
-                    puntuaciones reales.
-                  </span>
-                </>
-              ) : null}
-            </div>
-          </>
+        ) : ranking.length ? (
+          <TopThreePodium
+            entries={ranking}
+            categoryLabel={category.label}
+            categoryImage={category.image}
+          />
         ) : (
           <EmptyState
             title="Aún no hay suficientes puntuaciones"

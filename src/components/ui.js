@@ -460,6 +460,20 @@ export function DishRow({ product, rank }) {
   );
 }
 
+export function CardSkeleton({ className = "" }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`animate-pulse rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm ${className}`}
+    >
+      <div className="h-28 rounded-[18px] bg-beige/80" />
+      <div className="mt-3 h-3 w-3/4 rounded-full bg-beige/80" />
+      <div className="mt-2 h-3 w-1/2 rounded-full bg-beige/60" />
+      <div className="mt-3 h-3 w-2/3 rounded-full bg-beige/60" />
+    </div>
+  );
+}
+
 export function EmptyState({
   title,
   description,

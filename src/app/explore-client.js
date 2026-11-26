@@ -7,13 +7,16 @@ import { ArrowRight, Store } from "lucide-react";
 import {
   BusinessCard,
   CardGrid,
-  Pill,
+  CardSkeleton,
   SearchField,
   SectionTitle,
 } from "@/components/ui";
-import { CategoryChips, TopThreePodium } from "@/components/podium";
+import {
+  CategoryChips,
+  CategoryChipsSkeleton,
+  TopThreePodium,
+} from "@/components/podium";
 import { PromoCarousel } from "@/components/promo-carousel";
-import { demoCategories, getDemoRanking } from "@/lib/demo-ranking";
 import {
   useBusinesses,
   useCategories,
@@ -30,33 +33,20 @@ export default function ExploreClient() {
   const { businesses, isLoading: businessesLoading } = useBusinesses();
   const { promotions, isLoading: promotionsLoading } = usePromotions();
 
-  const realCategories = categories
+  const chipCategories = categories
     .filter((category) => category.top)
     .map((category) => ({
       id: category.id,
       label: category.label,
       image: category.image,
     }));
-  const showPreview = !categoriesLoading && realCategories.length === 0;
-  const chipCategories = showPreview ? demoCategories : realCategories;
   const activeCategoryId =
     selectedCategoryId &&
     chipCategories.some((category) => category.id === selectedCategoryId)
       ? selectedCategoryId
       : chipCategories[0]?.id ?? null;
-  const {
-    ranking,
-    isLoading: rankingLoading,
-    error: rankingError,
-  } = useRanking(showPreview ? null : activeCategoryId);
-  const demoEntries = activeCategoryId
-    ? getDemoRanking(activeCategoryId)
-    : [];
-  const usingDemo =
-    !rankingLoading &&
-    (Boolean(rankingError) || ranking.length === 0) &&
-    demoEntries.length > 0;
-  const podiumEntries = ranking.length ? ranking : demoEntries;
+  const { ranking, isLoading: rankingLoading } =
+    useRanking(activeCategoryId);
   const activeCategory = chipCategories.find(
     (category) => category.id === activeCategoryId,
   );
@@ -89,17 +79,21 @@ export default function ExploreClient() {
               ¿Qué se te antoja hoy?
             </h1>
           </div>
-          <div className="no-scrollbar mt-5 flex w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/buscar?categoria=${category.id}`}
-                className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-white/15 bg-white/12 px-3.5 text-xs font-semibold text-white transition hover:bg-white/20"
-              >
-                {category.label}
-              </Link>
-            ))}
-          </div>
+          {categoriesLoading ? (
+            <CategoryChipsSkeleton className="mt-5" />
+          ) : (
+            <div className="no-scrollbar mt-5 flex w-full flex-nowrap gap-2 overflow-x-auto pb-1">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/buscar?categoria=${category.id}`}
+                  className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-white/15 bg-white/12 px-3.5 text-xs font-semibold text-white transition hover:bg-white/20"
+                >
+                  {category.label}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
         <span className="pointer-events-none absolute -right-12 -top-10 hidden text-[190px] opacity-20 sm:block">
           🍽️
@@ -119,17 +113,16 @@ export default function ExploreClient() {
 
       <SectionTitle
         title="Mejores por categoría"
-        description={
-          showPreview
-            ? "Así se ve el podio con 3, 2 o 1 plato clasificado."
-            : "Los tres mejor puntuados de cada categoría. Elige una para ver su podio."
-        }
+        description="Los tres mejor puntuados de cada categoría. Elige una para ver su podio."
         action={activeCategoryId ? "Ver todos" : undefined}
         href={activeCategoryId ? `/categoria/${activeCategoryId}` : undefined}
       />
       {categoriesLoading ? (
-        <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
-          Cargando categorías…
+        <div>
+          <CategoryChipsSkeleton light />
+          <div className="mt-4">
+            <TopThreePodium loading />
+          </div>
         </div>
       ) : chipCategories.length ? (
         <>
@@ -146,11 +139,9 @@ export default function ExploreClient() {
                 categoryLabel={activeCategoryLabel}
                 categoryImage={activeCategoryImage}
               />
-            ) : podiumEntries.length ? (
+            ) : ranking.length ? (
               <TopThreePodium
-                entries={podiumEntries}
-                demo={usingDemo}
-                categoryId={activeCategoryId}
+                entries={ranking}
                 categoryLabel={activeCategoryLabel}
                 categoryImage={activeCategoryImage}
               />
@@ -159,22 +150,6 @@ export default function ExploreClient() {
                 Aún no hay suficientes puntuaciones en esta categoría.
               </div>
             )}
-          </div>
-
-          <div className="mt-3 flex min-h-10 flex-wrap items-center gap-2 text-xs leading-5 text-muted sm:min-h-6">
-            {usingDemo ? (
-              <>
-                <Pill tone="amber">Vista previa</Pill>
-                <span>
-                  {podiumEntries.length}{" "}
-                  {podiumEntries.length === 1
-                    ? "plato clasificado"
-                    : "platos clasificados"}{" "}
-                  · Datos de ejemplo mientras llegan las primeras puntuaciones
-                  reales.
-                </span>
-              </>
-            ) : null}
           </div>
         </>
       ) : (
@@ -215,9 +190,11 @@ export default function ExploreClient() {
         href="/buscar"
       />
       {businessesLoading ? (
-        <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
-          Cargando locales…
-        </div>
+        <CardGrid>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <CardSkeleton key={index} />
+          ))}
+        </CardGrid>
       ) : recommendedBusinesses.length ? (
         <CardGrid>
           {recommendedBusinesses.map((business) => (

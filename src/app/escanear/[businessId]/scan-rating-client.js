@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 import {
   BackLink,
@@ -50,6 +50,7 @@ export default function ScanRatingClient({ businessId }) {
   const { user, ready: authReady } = useClientAuth();
   const userId = user?.id;
   const pathname = usePathname();
+  const router = useRouter();
   const [scanAllowed, setScanAllowed] = useState(null);
   const [scanError, setScanError] = useState("");
   const [visitId, setVisitId] = useState(null);
@@ -307,8 +308,23 @@ export default function ScanRatingClient({ businessId }) {
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/70">
               Busca el plato que probaste y asígnale de 1 a 5 estrellas. Cada
-              plato admite un solo voto por dispositivo.
+              plato admite un solo voto por dispositivo y por cuenta.
             </p>
+            {votesRemaining > 0 ? (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => router.push("/")}
+                  className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-xs font-semibold text-ink transition hover:bg-white/90"
+                >
+                  Votar después
+                </button>
+                <span className="text-[11px] leading-4 text-white/60">
+                  Puedes usar tus votos durante las próximas 24 h desde el botón
+                  de votación pendiente.
+                </span>
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

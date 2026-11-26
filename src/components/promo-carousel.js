@@ -5,6 +5,22 @@ import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Store } from "lucide-react";
 import { PromoCard } from "@/components/ui";
 
+function PromoCardSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex w-[86vw] max-w-[420px] shrink-0 animate-pulse snap-start items-center gap-3 rounded-[20px] border border-line/70 bg-white/60 p-3 shadow-sm sm:w-[420px]"
+    >
+      <span className="h-14 w-14 shrink-0 rounded-2xl bg-beige/80" />
+      <span className="min-w-0 flex-1 space-y-2">
+        <span className="block h-3 w-3/4 rounded-full bg-beige/80" />
+        <span className="block h-3 w-1/2 rounded-full bg-beige/60" />
+      </span>
+      <span className="h-5 w-14 shrink-0 rounded-full bg-beige/80" />
+    </div>
+  );
+}
+
 function PlatformPromoCard() {
   return (
     <Link
@@ -119,11 +135,11 @@ export function PromoCarousel({ promotions, loading = false }) {
         className="no-scrollbar -mx-4 flex flex-nowrap snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:scroll-px-6 sm:px-6"
       >
         <PlatformPromoCard />
-        {!loading
-          ? promotions.map((promotion) => (
+        {loading
+          ? [0, 1].map((index) => <PromoCardSkeleton key={index} />)
+          : promotions.map((promotion) => (
               <PromoCard key={promotion.id} promotion={promotion} />
-            ))
-          : null}
+            ))}
       </div>
     </section>
   );

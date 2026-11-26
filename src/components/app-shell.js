@@ -11,6 +11,7 @@ import {
   Search,
   UserRound,
 } from "lucide-react";
+import { PendingVoteButton } from "@/components/pending-vote-button";
 
 const navigation = [
   { href: "/", label: "Explorar", icon: Home },
@@ -171,6 +172,8 @@ export function AppShell({ children }) {
           <p>Hecho para comer bien en Coro.</p>
         </div>
       </footer>
+
+      <PendingVoteButton />
 
       <nav
         aria-label="Navegación inferior"

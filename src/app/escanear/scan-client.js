@@ -110,8 +110,8 @@ export default function ScanClient() {
         <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <p>
           Al escanear permitimos <strong>2 votos</strong> durante las próximas{" "}
-          <strong>24 horas</strong>. La ubicación se usa solo para confirmar que
-          estás cerca del local.
+          <strong>24 horas</strong>. Puedes votar ahora o después: la ubicación
+          solo se usa para confirmar que estás cerca del local.
         </p>
       </div>
 

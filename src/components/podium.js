@@ -80,14 +80,7 @@ function entryData(entry) {
   return { product, business, score, ratingsCount, businessName, zone };
 }
 
-function PodiumEntry({
-  entry,
-  position,
-  demo,
-  categoryId,
-  categoryImage,
-  loading,
-}) {
+function PodiumEntry({ entry, position, categoryImage, loading }) {
   const data = entryData(entry);
 
   if (loading) {
@@ -122,9 +115,7 @@ function PodiumEntry({
     );
   }
 
-  const href = demo
-    ? `/buscar?categoria=${encodeURIComponent(categoryId || "")}`
-    : `/plato/${data.product.id}`;
+  const href = `/plato/${data.product.id}`;
 
   const content = (
     <>
@@ -190,9 +181,7 @@ function PodiumEntry({
 
 export function TopThreePodium({
   entries = [],
-  demo = false,
   loading = false,
-  categoryId,
   categoryLabel = "",
   categoryImage,
 }) {
@@ -267,8 +256,6 @@ export function TopThreePodium({
                 <PodiumEntry
                   entry={entry}
                   position={position}
-                  demo={demo}
-                  categoryId={categoryId}
                   categoryImage={categoryImage}
                   loading={loading}
                 />
@@ -287,6 +274,27 @@ export function TopThreePodium({
           })}
         </ol>
       </div>
+    </div>
+  );
+}
+
+export function CategoryChipsSkeleton({ light = false, className = "" }) {
+  const widths = ["w-24", "w-20", "w-28", "w-24", "w-32"];
+
+  return (
+    <div
+      role="status"
+      className={`flex gap-2 overflow-hidden ${className}`}
+    >
+      <span className="sr-only">Cargando categorías…</span>
+      {widths.map((width, index) => (
+        <span
+          key={index}
+          className={`h-10 shrink-0 animate-pulse rounded-full ${width} ${
+            light ? "bg-beige/80" : "bg-white/15"
+          }`}
+        />
+      ))}
     </div>
   );
 }
