@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useClientAuth } from "@/components/auth-provider";
+import { useGoogleConfig } from "@/components/google-config-provider";
 
 let googleScriptPromise = null;
 
@@ -28,7 +29,7 @@ function loadGoogleScript() {
 }
 
 export function GoogleLoginButton({ next = "/perfil", className = "" }) {
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const { clientId } = useGoogleConfig();
   const { loginWithGoogle } = useClientAuth();
   const router = useRouter();
   const buttonRef = useRef(null);
@@ -95,7 +96,7 @@ export function GoogleLoginButton({ next = "/perfil", className = "" }) {
         <div className="rounded-2xl border border-dashed border-line bg-soft p-4 text-center text-xs leading-5 text-muted">
           El acceso con Google aún no está configurado. Agrega
           <code className="mx-1 rounded bg-white px-1.5 py-0.5 text-[11px] text-ink">
-            NEXT_PUBLIC_GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_ID
           </code>
           en el entorno del cliente web.
         </div>

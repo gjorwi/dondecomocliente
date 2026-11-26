@@ -2,6 +2,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
 import { ClientAuthProvider } from "@/components/auth-provider";
+import { GoogleConfigProvider } from "@/components/google-config-provider";
 import { SavedProvider } from "@/components/saved-provider";
 
 const figtree = localFont({
@@ -42,11 +43,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es" className={`${figtree.variable} ${bricolage.variable}`}>
       <body>
-        <ClientAuthProvider>
-          <SavedProvider>
-            <AppShell>{children}</AppShell>
-          </SavedProvider>
-        </ClientAuthProvider>
+        <GoogleConfigProvider clientId={process.env.GOOGLE_CLIENT_ID || ""}>
+          <ClientAuthProvider>
+            <SavedProvider>
+              <AppShell>{children}</AppShell>
+            </SavedProvider>
+          </ClientAuthProvider>
+        </GoogleConfigProvider>
       </body>
     </html>
   );
