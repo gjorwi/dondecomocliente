@@ -2,16 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight, Heart } from "lucide-react";
 import { BackLink, EmptyState, Pill, RatingLine } from "@/components/ui";
+import { ShareButton } from "@/components/share-button";
+import { trackBusinessEvent } from "@/lib/api";
 import { getAdjustedProductScore, MIN_RATINGS_FOR_RANKING } from "@/lib/scoring";
 import { formatMoney, getPriceRows } from "@/lib/price";
 import { useProduct } from "@/lib/hooks";
+import { useClientAuth } from "@/components/auth-provider";
 import { useSaved } from "@/components/saved-provider";
 
 export default function DishClient({ productId }) {
   const { product, business, category, isLoading } = useProduct(productId);
   const { isSaved, toggleSaved } = useSaved();
+  const { user } = useClientAuth();
+  const router = useRouter();
+  const pathname = usePathname();
 
   if (isLoading && !product) {
     return (
@@ -42,6 +49,14 @@ export default function DishClient({ productId }) {
   const savedKey = `dish:${product.id}`;
   const saved = isSaved(savedKey);
 
+  const toggleFavorite = () => {
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    toggleSaved(savedKey).catch(() => {});
+  };
+
   return (
     <div>
       <BackLink href={business ? `/local/${business.id}` : "/"} />
@@ -70,7 +85,7 @@ export default function DishClient({ productId }) {
         </div>
         <button
           type="button"
-          onClick={() => toggleSaved(savedKey)}
+          onClick={toggleFavorite}
           aria-label={saved ? "Quitar plato de favoritos" : "Añadir plato a favoritos"}
           className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition hover:scale-105"
         >
@@ -160,6 +175,20 @@ export default function DishClient({ productId }) {
             >
               Ver Top 3 de la categoría
             </Link>
+            <ShareButton
+              path={`/plato/${product.id}`}
+              title={product.name}
+              text={`Mira ${product.name} en comidasTop.`}
+              onShared={(channel) => {
+                const businessId = product.businessId || business?.id;
+                if (businessId) {
+                  trackBusinessEvent(businessId, "dish_share", {
+                    productId: product.id,
+                    channel,
+                  });
+                }
+              }}
+            />
           </div>
         </div>
       </div>

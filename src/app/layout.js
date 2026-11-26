@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
+import { ClientAuthProvider } from "@/components/auth-provider";
 import { SavedProvider } from "@/components/saved-provider";
 
 const figtree = localFont({
@@ -41,9 +42,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es" className={`${figtree.variable} ${bricolage.variable}`}>
       <body>
-        <SavedProvider>
-          <AppShell>{children}</AppShell>
-        </SavedProvider>
+        <ClientAuthProvider>
+          <SavedProvider>
+            <AppShell>{children}</AppShell>
+          </SavedProvider>
+        </ClientAuthProvider>
       </body>
     </html>
   );

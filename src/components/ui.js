@@ -13,6 +13,8 @@ import {
   getProductPrices,
   hasSizePrices,
 } from "@/lib/price";
+import { ShareButton } from "@/components/share-button";
+import { trackBusinessEvent } from "@/lib/api";
 
 const pillTones = {
   beige: "bg-beige text-ink",
@@ -357,56 +359,73 @@ export function DishCard({ product }) {
     .join(" · ");
 
   return (
-    <Link
-      href={`/plato/${product.id}`}
-      className="group flex self-start flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
-    >
-      <div className="relative flex h-32 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-amber-tint text-[54px]">
-        {product.image ? (
-          <Image
-            src={product.image}
-            alt=""
-            fill
-            unoptimized
-            sizes="(max-width: 640px) 50vw, 300px"
-            className="object-cover"
-          />
-        ) : (
-          product.emoji || "🍽️"
-        )}
-        {product.isAvailable === false ? (
-          <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-1 text-[10px] font-semibold text-white">
-            No disponible hoy
-          </span>
-        ) : null}
-      </div>
-      <div className="mt-3 flex flex-col">
-        <h3 className="line-clamp-2 text-[15px] font-semibold leading-5 text-ink">
-          {product.name}
-        </h3>
-        <p className="mt-1 line-clamp-1 text-[12px] leading-4 text-muted">
-          {product.businessName || "Establecimiento"}
-          {businessArea ? ` · ${businessArea}` : ""}
-        </p>
-        <div className="mt-2 flex items-center justify-between gap-1.5">
-          <RatingLine
-            score={score}
-            count={product.ratingsCount}
-            compact
-          />
-          {!sizePricing && priceSummary ? (
-            <span className="text-[13px] font-semibold text-ink">
-              {priceSummary}
+    <div className="relative self-start">
+      <Link
+        href={`/plato/${product.id}`}
+        className="group flex flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
+      >
+        <div className="relative flex h-32 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-amber-tint text-[54px]">
+          {product.image ? (
+            <Image
+              src={product.image}
+              alt=""
+              fill
+              unoptimized
+              sizes="(max-width: 640px) 50vw, 300px"
+              className="object-cover"
+            />
+          ) : (
+            product.emoji || "🍽️"
+          )}
+          {product.isAvailable === false ? (
+            <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-1 text-[10px] font-semibold text-white">
+              No disponible hoy
             </span>
           ) : null}
         </div>
-        {sizePricing && priceSummary ? (
-          <p className="mt-1 text-right text-[11px] font-semibold leading-4 text-ink">
-            {priceSummary}
+        <div className="mt-3 flex flex-col">
+          <h3 className="line-clamp-2 text-[15px] font-semibold leading-5 text-ink">
+            {product.name}
+          </h3>
+          <p className="mt-1 line-clamp-1 text-[12px] leading-4 text-muted">
+            {product.businessName || "Establecimiento"}
+            {businessArea ? ` · ${businessArea}` : ""}
           </p>
-        ) : null}
-      </div>
-    </Link>
+          <div className="mt-2 flex items-center justify-between gap-1.5">
+            <RatingLine
+              score={score}
+              count={product.ratingsCount}
+              compact
+            />
+            {!sizePricing && priceSummary ? (
+              <span className="text-[13px] font-semibold text-ink">
+                {priceSummary}
+              </span>
+            ) : null}
+          </div>
+          {sizePricing && priceSummary ? (
+            <p className="mt-1 text-right text-[11px] font-semibold leading-4 text-ink">
+              {priceSummary}
+            </p>
+          ) : null}
+        </div>
+      </Link>
+
+      <ShareButton
+        path={`/plato/${product.id}`}
+        title={product.name}
+        iconOnly
+        className="absolute right-2 top-2 z-10"
+        onShared={(channel) => {
+          if (product.businessId) {
+            trackBusinessEvent(product.businessId, "dish_share", {
+              productId: product.id,
+              channel,
+            });
+          }
+        }}
+      />
+    </div>
   );
 }
 

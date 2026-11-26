@@ -2,76 +2,64 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useMemo,
-  useSyncExternalStore,
+  useState,
 } from "react";
+import { useSWRConfig } from "swr";
+import { apiFetch } from "@/lib/api";
+import { useClientAuth } from "@/components/auth-provider";
 
-const STORAGE_KEY = "dondecomo:saved";
-const listeners = new Set();
 const SavedContext = createContext(null);
 
-function subscribe(callback) {
-  listeners.add(callback);
-  const onStorage = (event) => {
-    if (event.key === STORAGE_KEY) callback();
-  };
-  window.addEventListener("storage", onStorage);
-  return () => {
-    listeners.delete(callback);
-    window.removeEventListener("storage", onStorage);
-  };
-}
-
-function getSnapshot() {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) || "[]";
-  } catch {
-    return "[]";
-  }
-}
-
-function getServerSnapshot() {
-  return "[]";
-}
-
-function notify() {
-  listeners.forEach((listener) => listener());
-}
-
 export function SavedProvider({ children }) {
-  const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const { user, ready: authReady } = useClientAuth();
+  const { mutate } = useSWRConfig();
+  const [override, setOverride] = useState(null);
 
-  const savedIds = useMemo(() => {
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }, [raw]);
+  const serverFavorites = Array.isArray(user?.favorites)
+    ? user.favorites
+    : [];
+  const savedIds =
+    override && override.userId === user?.id
+      ? override.ids
+      : serverFavorites;
+  const ready = authReady;
+
+  const toggleSaved = useCallback(
+    async (id) => {
+      if (!user) return { requiresAuth: true };
+
+      const previous = savedIds;
+      const next = previous.includes(id)
+        ? previous.filter((item) => item !== id)
+        : [...previous, id];
+
+      setOverride({ userId: user.id, ids: next });
+      try {
+        await apiFetch("/auth/me/favorites", {
+          method: "PUT",
+          body: JSON.stringify({ favorites: next }),
+        });
+        await mutate("/auth/me");
+        return { ok: true };
+      } catch (error) {
+        setOverride({ userId: user.id, ids: previous });
+        throw error;
+      }
+    },
+    [mutate, savedIds, user],
+  );
 
   const value = useMemo(
     () => ({
       savedIds,
-      ready: true,
+      ready,
       isSaved: (id) => savedIds.includes(id),
-      toggleSaved: (id) => {
-        try {
-          const raw = window.localStorage.getItem(STORAGE_KEY) || "[]";
-          const parsed = JSON.parse(raw);
-          const current = Array.isArray(parsed) ? parsed : [];
-          const next = current.includes(id)
-            ? current.filter((item) => item !== id)
-            : [...current, id];
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        } catch {
-          return;
-        }
-        notify();
-      },
+      toggleSaved,
     }),
-    [savedIds],
+    [ready, savedIds, toggleSaved],
   );
 
   return <SavedContext.Provider value={value}>{children}</SavedContext.Provider>;

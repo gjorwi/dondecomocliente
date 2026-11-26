@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Star } from "lucide-react";
 import {
   BackLink,
@@ -11,6 +12,8 @@ import {
   SearchField,
   SectionTitle,
 } from "@/components/ui";
+import { GoogleLoginButton } from "@/components/google-login-button";
+import { useClientAuth } from "@/components/auth-provider";
 import { normalizeText } from "@/lib/text";
 import { getAdjustedProductScore } from "@/lib/scoring";
 import { formatPriceSummary } from "@/lib/price";
@@ -44,6 +47,9 @@ function FilterChip({ children, selected, onClick }) {
 export default function ScanRatingClient({ businessId }) {
   const { business, products, isLoading } = useBusiness(businessId);
   const { categories } = useCategories();
+  const { user, ready: authReady } = useClientAuth();
+  const userId = user?.id;
+  const pathname = usePathname();
   const [scanAllowed, setScanAllowed] = useState(null);
   const [scanError, setScanError] = useState("");
   const [visitId, setVisitId] = useState(null);
@@ -55,6 +61,8 @@ export default function ScanRatingClient({ businessId }) {
   const [submittingId, setSubmittingId] = useState(null);
 
   useEffect(() => {
+    if (!authReady || !userId) return undefined;
+
     let active = true;
     const session = readScanSession();
     const valid =
@@ -107,7 +115,7 @@ export default function ScanRatingClient({ businessId }) {
     return () => {
       active = false;
     };
-  }, [businessId]);
+  }, [authReady, businessId, userId]);
 
   const categoryNames = useMemo(
     () => new Map(categories.map((category) => [category.id, category.label])),
@@ -185,6 +193,36 @@ export default function ScanRatingClient({ businessId }) {
       setSubmittingId(null);
     }
   };
+
+  if (!authReady) {
+    return (
+      <div className="mx-auto max-w-lg rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
+        Preparando tu sesión…
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-lg">
+        <BackLink href="/escanear" label="Volver al escáner" />
+        <div className="rounded-[28px] bg-white p-5 shadow-sm sm:p-6">
+          <Pill tone="amber">Acceso requerido</Pill>
+          <h1 className="mt-3 font-display text-[28px] leading-tight tracking-[-0.035em] text-ink">
+            Inicia sesión para puntuar
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Para cuidar la transparencia del ranking, las puntuaciones se
+            asocian a una cuenta verificada. Así evitamos votos duplicados y
+            guardamos tu historial.
+          </p>
+          <div className="mt-5">
+            <GoogleLoginButton next={pathname} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (scanAllowed === null) {
     return (

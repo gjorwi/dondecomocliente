@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BadgeCheck,
   Clock3,
@@ -19,8 +21,11 @@ import {
   Pill,
   SectionTitle,
 } from "@/components/ui";
+import { ShareButton } from "@/components/share-button";
+import { trackBusinessEvent } from "@/lib/api";
 import { formatScore } from "@/lib/scoring";
 import { useBusiness } from "@/lib/hooks";
+import { useClientAuth } from "@/components/auth-provider";
 import { useSaved } from "@/components/saved-provider";
 
 function formatMoney(value) {
@@ -59,6 +64,47 @@ function DeliveryRates({ business }) {
 export default function BusinessClient({ businessId }) {
   const { business, products, isLoading } = useBusiness(businessId);
   const { isSaved, toggleSaved } = useSaved();
+  const { user } = useClientAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!business?.id) return undefined;
+
+    trackBusinessEvent(business.id, "business_view");
+
+    const element = menuRef.current;
+    if (!element) return undefined;
+
+    if (typeof IntersectionObserver === "undefined") {
+      trackBusinessEvent(business.id, "menu_view");
+      return undefined;
+    }
+
+    let fired = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (fired) return;
+        if (entries.some((entry) => entry.isIntersecting)) {
+          fired = true;
+          trackBusinessEvent(business.id, "menu_view");
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [business?.id]);
+
+  const toggleFavorite = () => {
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    toggleSaved(`local:${business.id}`).catch(() => {});
+  };
 
   if (isLoading && !business) {
     return (
@@ -148,7 +194,7 @@ export default function BusinessClient({ businessId }) {
         </div>
         <button
           type="button"
-          onClick={() => toggleSaved(savedKey)}
+          onClick={toggleFavorite}
           aria-label={saved ? "Quitar de favoritos" : "Añadir a favoritos"}
           className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition hover:scale-105"
         >
@@ -269,6 +315,7 @@ export default function BusinessClient({ businessId }) {
           href={whatsappUrl}
           target="_blank"
           rel="noreferrer"
+          onClick={() => trackBusinessEvent(business.id, "whatsapp")}
           className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white transition hover:bg-[#b33a0d]"
         >
           <MessageCircle className="h-4 w-4" />
@@ -276,6 +323,7 @@ export default function BusinessClient({ businessId }) {
         </a>
         <a
           href={`tel:${business.phone.replace(/[^0-9+]/g, "")}`}
+          onClick={() => trackBusinessEvent(business.id, "call")}
           className="inline-flex min-h-11 items-center gap-2 rounded-full bg-beige px-5 text-sm font-semibold text-ink transition hover:bg-[#ebe0d4]"
         >
           <Phone className="h-4 w-4" />
@@ -285,29 +333,40 @@ export default function BusinessClient({ businessId }) {
           href={mapsUrl}
           target="_blank"
           rel="noreferrer"
+          onClick={() => trackBusinessEvent(business.id, "directions")}
           className="inline-flex min-h-11 items-center gap-2 rounded-full bg-beige px-5 text-sm font-semibold text-ink transition hover:bg-[#ebe0d4]"
         >
           <MapPin className="h-4 w-4" />
           Cómo llegar
         </a>
+        <ShareButton
+          path={`/local/${business.id}`}
+          title={business.name}
+          text={`Mira ${business.name} en comidasTop.`}
+          onShared={(channel) =>
+            trackBusinessEvent(business.id, "business_share", { channel })
+          }
+        />
       </div>
 
-      <SectionTitle
-        title="Menú puntuado"
-        description="Las puntuaciones corresponden a cada plato; no hay reseñas escritas."
-      />
-      {products.length ? (
-        <CardGrid>
-          {products.map((product) => (
-            <DishCard key={product.id} product={product} />
-          ))}
-        </CardGrid>
-      ) : (
-        <EmptyState
-          title="Menú en preparación"
-          description="Este establecimiento todavía no publicó platos."
+      <div ref={menuRef}>
+        <SectionTitle
+          title="Menú puntuado"
+          description="Las puntuaciones corresponden a cada plato; no hay reseñas escritas."
         />
-      )}
+        {products.length ? (
+          <CardGrid>
+            {products.map((product) => (
+              <DishCard key={product.id} product={product} />
+            ))}
+          </CardGrid>
+        ) : (
+          <EmptyState
+            title="Menú en preparación"
+            description="Este establecimiento todavía no publicó platos."
+          />
+        )}
+      </div>
 
       {metrics.categories.length > 0 ? (
         <>
