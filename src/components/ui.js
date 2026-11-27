@@ -22,6 +22,7 @@ const pillTones = {
   open: "bg-green-tint text-open",
   amber: "bg-amber-tint text-[#6a4700]",
   dark: "bg-ink text-white",
+  red: "bg-accent-tint text-accent",
 };
 
 export function Pill({ children, tone = "beige", className = "" }) {

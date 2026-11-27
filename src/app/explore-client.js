@@ -17,6 +17,7 @@ import {
   TopThreePodium,
 } from "@/components/podium";
 import { PromoCarousel } from "@/components/promo-carousel";
+import { HomeCoupons } from "@/components/home-coupons";
 import {
   useBusinesses,
   useCategories,
@@ -110,6 +111,8 @@ export default function ExploreClient() {
       </div>
 
       <PromoCarousel promotions={promotions} loading={promotionsLoading} />
+
+      <HomeCoupons />
 
       <SectionTitle
         title="Mejores por categoría"

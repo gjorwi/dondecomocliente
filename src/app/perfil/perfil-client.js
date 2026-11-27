@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Heart, Info, LogOut, Star, UserRound } from "lucide-react";
+import {
+  ArrowRight,
+  Gift,
+  Heart,
+  Info,
+  LogOut,
+  Star,
+  Trophy,
+  UserRound,
+} from "lucide-react";
 import { GoogleLoginButton } from "@/components/google-login-button";
 import { useClientAuth } from "@/components/auth-provider";
 import { useSaved } from "@/components/saved-provider";
@@ -112,6 +121,16 @@ export default function ProfileClient() {
           </span>
         </div>
         <div className="my-4 h-px bg-line" />
+        <div className="flex items-center justify-between gap-4">
+          <span className="inline-flex items-center gap-2 text-sm text-ink">
+            <Star className="h-4 w-4 fill-mustard text-mustard" />
+            Puntos disponibles
+          </span>
+          <span className="font-display text-2xl text-accent">
+            {user?.points ?? 0}
+          </span>
+        </div>
+        <div className="my-4 h-px bg-line" />
         <p className="text-xs leading-5 text-muted">
           {user
             ? "Tus favoritos se sincronizan con tu cuenta."
@@ -126,6 +145,43 @@ export default function ProfileClient() {
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         ) : null}
+      </section>
+
+      <section className="mt-4 grid gap-3 sm:grid-cols-2">
+        <Link
+          href="/recompensas"
+          className="group flex min-h-[96px] items-center gap-3 rounded-[24px] bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-tint text-[#8a5a00]">
+            <Trophy className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold text-ink">
+              Puntos y logros
+            </span>
+            <span className="block text-xs text-muted">
+              Revisa tu progreso e insignias
+            </span>
+          </span>
+          <ArrowRight className="h-4 w-4 text-muted group-hover:text-accent" />
+        </Link>
+        <Link
+          href="/cupones"
+          className="group flex min-h-[96px] items-center gap-3 rounded-[24px] bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-tint text-open">
+            <Gift className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold text-ink">
+              Cupones
+            </span>
+            <span className="block text-xs text-muted">
+              Canjea tus puntos por beneficios
+            </span>
+          </span>
+          <ArrowRight className="h-4 w-4 text-muted group-hover:text-accent" />
+        </Link>
       </section>
 
       <section className="mt-4 rounded-[24px] bg-white p-5 shadow-sm">

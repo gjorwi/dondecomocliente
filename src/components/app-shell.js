@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
+  Gift,
   Heart,
   Home,
   MapPin,
@@ -17,8 +18,13 @@ const navigation = [
   { href: "/", label: "Explorar", icon: Home },
   { href: "/buscar", label: "Buscar", icon: Search },
   { href: "/favoritos", label: "Favoritos", icon: Heart },
+  { href: "/cupones", label: "Cupones", icon: Gift },
   { href: "/perfil", label: "Perfil", icon: UserRound },
 ];
+
+// La barra inferior solo tiene espacio para cuatro pestañas alrededor del
+// botón de escaneo. Favoritos sigue disponible en el header y el footer.
+const mobileNavigation = navigation.filter(({ href }) => href !== "/favoritos");
 
 function isActive(pathname, href) {
   if (href === "/") return pathname === "/";
@@ -149,6 +155,8 @@ export function AppShell({ children }) {
               <Link href="/" className="text-white/80 transition hover:text-white">Inicio</Link>
               <Link href="/buscar" className="text-white/80 transition hover:text-white">Buscar</Link>
               <Link href="/favoritos" className="text-white/80 transition hover:text-white">Favoritos</Link>
+              <Link href="/cupones" className="text-white/80 transition hover:text-white">Cupones</Link>
+              <Link href="/recompensas" className="text-white/80 transition hover:text-white">Recompensas</Link>
               <Link href="/perfil" className="text-white/80 transition hover:text-white">Perfil</Link>
             </div>
           </div>
@@ -180,11 +188,11 @@ export function AppShell({ children }) {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-white px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 md:hidden"
       >
         <div className="relative mx-auto flex max-w-lg items-stretch gap-1">
-          {navigation.slice(0, 2).map(renderTab)}
+          {mobileNavigation.slice(0, 2).map(renderTab)}
 
           <div className="w-[70px] shrink-0" aria-hidden="true" />
 
-          {navigation.slice(2).map(renderTab)}
+          {mobileNavigation.slice(2).map(renderTab)}
 
           <Link
             href="/escanear"

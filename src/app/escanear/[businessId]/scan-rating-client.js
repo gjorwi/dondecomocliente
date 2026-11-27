@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useSWRConfig } from "swr";
 import { Star } from "lucide-react";
 import {
   BackLink,
@@ -48,6 +49,7 @@ export default function ScanRatingClient({ businessId }) {
   const { business, products, isLoading } = useBusiness(businessId);
   const { categories } = useCategories();
   const { user, ready: authReady } = useClientAuth();
+  const { mutate: mutateGlobal } = useSWRConfig();
   const userId = user?.id;
   const pathname = usePathname();
   const router = useRouter();
@@ -166,16 +168,26 @@ export default function ScanRatingClient({ businessId }) {
       setRatings((current) => ({ ...current, [product.id]: value }));
       setVotesRemaining(remaining);
       updateScanSessionVotes(businessId, remaining);
+      await mutateGlobal("/auth/me");
+
+      const pointsEarned = Number(payload.pointsEarned) || 0;
+      const achievements = payload.achievementsUnlocked || [];
+      const pointsText =
+        pointsEarned > 0 ? ` Ganaste ${pointsEarned} puntos.` : "";
+      const achievementsText = achievements.length
+        ? ` Logro desbloqueado: ${achievements
+            .map((achievement) => achievement.title)
+            .join(", ")}.`
+        : "";
+      const votesText =
+        remaining > 0
+          ? `Te queda ${remaining} ${remaining === 1 ? "voto" : "votos"} de este escaneo.`
+          : "Usaste los 2 votos de este escaneo.";
       setMessages((current) => ({
         ...current,
         [product.id]: {
           type: "success",
-          text:
-            remaining > 0
-              ? `Gracias. Registramos tu voto; te queda ${remaining} ${
-                  remaining === 1 ? "voto" : "votos"
-                } de este escaneo.`
-              : "Gracias. Usaste los 2 votos de este escaneo. Escanea el QR nuevamente para seguir puntuando otros platos.",
+          text: `Gracias. Registramos tu voto. ${votesText}${pointsText}${achievementsText}`,
         },
       }));
     } catch (error) {
