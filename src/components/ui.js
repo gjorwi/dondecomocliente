@@ -235,7 +235,7 @@ export function BusinessCard({ business }) {
   return (
     <Link
       href={`/local/${business.id}`}
-      className="group flex self-start flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
+      className="group flex h-full flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
     >
       <div className="relative flex h-28 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-accent-tint text-[54px]">
         {business.coverImage ? (
@@ -359,10 +359,10 @@ export function DishCard({ product }) {
     .join(" · ");
 
   return (
-    <div className="relative self-start">
+    <div className="relative h-full">
       <Link
         href={`/plato/${product.id}`}
-        className="group flex flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
+        className="group flex h-full flex-col rounded-[24px] border border-line/70 bg-white/65 p-3 shadow-sm backdrop-blur-[2px] transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-md"
       >
         <div className="relative flex h-32 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-amber-tint text-[54px]">
           {product.image ? (
@@ -383,31 +383,36 @@ export function DishCard({ product }) {
             </span>
           ) : null}
         </div>
-        <div className="mt-3 flex flex-col">
-          <h3 className="line-clamp-2 text-[15px] font-semibold leading-5 text-ink">
+        <div className="mt-3 flex flex-1 flex-col">
+          <h3 className="line-clamp-2 min-h-10 text-[15px] font-semibold leading-5 text-ink">
             {product.name}
           </h3>
-          <p className="mt-1 line-clamp-1 text-[12px] leading-4 text-muted">
+          <p className="mt-1 line-clamp-1 min-h-4 text-[12px] leading-4 text-muted">
             {product.businessName || "Establecimiento"}
             {businessArea ? ` · ${businessArea}` : ""}
           </p>
-          <div className="mt-2 flex items-center justify-between gap-1.5">
-            <RatingLine
-              score={score}
-              count={product.ratingsCount}
-              compact
-            />
-            {!sizePricing && priceSummary ? (
-              <span className="text-[13px] font-semibold text-ink">
-                {priceSummary}
-              </span>
-            ) : null}
-          </div>
-          {sizePricing && priceSummary ? (
-            <p className="mt-1 text-right text-[11px] font-semibold leading-4 text-ink">
-              {priceSummary}
+          <div className="mt-auto">
+            <div className="mt-2 flex items-center justify-between gap-1.5">
+              <RatingLine
+                score={score}
+                count={product.ratingsCount}
+                compact
+              />
+              {!sizePricing && priceSummary ? (
+                <span className="text-[13px] font-semibold text-ink">
+                  {priceSummary}
+                </span>
+              ) : null}
+            </div>
+            <p
+              aria-hidden={!sizePricing || !priceSummary}
+              className={`mt-1 min-h-4 text-right text-[11px] font-semibold leading-4 text-ink ${
+                sizePricing && priceSummary ? "" : "invisible"
+              }`}
+            >
+              {priceSummary || "\u00A0"}
             </p>
-          ) : null}
+          </div>
         </div>
       </Link>
 

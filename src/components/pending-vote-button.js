@@ -1,40 +1,89 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { usePathname, useRouter } from "next/navigation";
+import useSWR from "swr";
 import { ArrowRight, Loader2, Star } from "lucide-react";
 import { useClientAuth } from "@/components/auth-provider";
-import { fetchScanStatus } from "@/lib/api";
+import { apiFetch, fetchScanStatus, getDeviceId } from "@/lib/api";
 import {
+  SCAN_EVENT,
   clearScanSession,
   getScanSnapshot,
   parseScanSession,
+  saveScanSession,
   subscribeToScan,
-  updateScanSessionVotes,
 } from "@/lib/scan-session";
 
 export function PendingVoteButton() {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useClientAuth();
+  const deviceId = useMemo(() => getDeviceId(), []);
   const raw = useSyncExternalStore(
     subscribeToScan,
     getScanSnapshot,
     () => "",
   );
-  const session = useMemo(() => parseScanSession(raw), [raw]);
+  const localSession = useMemo(() => parseScanSession(raw), [raw]);
+  const pendingKey = user
+    ? `/auth/me/pending-votes?deviceId=${encodeURIComponent(deviceId)}`
+    : null;
+  const { data: pendingData, mutate: mutatePending } = useSWR(
+    pendingKey,
+    apiFetch,
+    { revalidateOnFocus: false },
+  );
+  const serverPending = pendingData?.pending || null;
+  const pending = useMemo(() => {
+    if (serverPending) {
+      return {
+        businessId: serverPending.businessId,
+        businessName: serverPending.businessName,
+        visitId: serverPending.visitId,
+        votesRemaining: serverPending.votesRemaining,
+        maxVotes: serverPending.maxVotes,
+        votesUsed: serverPending.votesUsed,
+        expiresAt: new Date(serverPending.expiresAt).getTime(),
+        source: "server",
+      };
+    }
+    if (localSession) return { ...localSession, source: "local" };
+    return null;
+  }, [localSession, serverPending]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
-  if (!session || session.votesRemaining <= 0) return null;
-  if (pathname === `/escanear/${session.businessId}`) return null;
+  useEffect(() => {
+    if (!pendingKey) return undefined;
+    const refresh = () => mutatePending();
+    window.addEventListener(SCAN_EVENT, refresh);
+    return () => window.removeEventListener(SCAN_EVENT, refresh);
+  }, [mutatePending, pendingKey]);
+
+  if (!pending || pending.votesRemaining <= 0) return null;
+  if (pathname === `/escanear/${pending.businessId}`) return null;
 
   const openVoting = async () => {
     if (busy) return;
 
     if (!user) {
+      if (pending.source === "server") {
+        saveScanSession(pending.businessId, {
+          id: pending.visitId,
+          votesRemaining: pending.votesRemaining,
+          maxVotes: pending.maxVotes,
+          votesUsed: pending.votesUsed,
+          expiresAt: new Date(pending.expiresAt).toISOString(),
+        });
+      }
       router.push(
-        `/login?next=${encodeURIComponent(`/escanear/${session.businessId}`)}`,
+        `/login?next=${encodeURIComponent(`/escanear/${pending.businessId}`)}`,
       );
       return;
     }
@@ -42,17 +91,16 @@ export function PendingVoteButton() {
     setBusy(true);
     setMessage("");
     try {
-      const payload = await fetchScanStatus(session.businessId);
+      const payload = await fetchScanStatus(pending.businessId);
       if (!payload.visit || payload.visit.votesRemaining <= 0) {
         clearScanSession();
+        await mutatePending();
         return;
       }
 
-      updateScanSessionVotes(
-        session.businessId,
-        payload.visit.votesRemaining,
-      );
-      router.push(`/escanear/${session.businessId}`);
+      saveScanSession(pending.businessId, payload.visit);
+      await mutatePending();
+      router.push(`/escanear/${pending.businessId}`);
     } catch (error) {
       setMessage(
         error.message || "No pudimos verificar tu votación pendiente.",
@@ -68,6 +116,11 @@ export function PendingVoteButton() {
         type="button"
         onClick={openVoting}
         disabled={busy}
+        title={
+          pending.businessName
+            ? `Votación pendiente en ${pending.businessName}`
+            : "Votación pendiente"
+        }
         className="flex min-h-12 max-w-full items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white shadow-lg ring-1 ring-white/10 transition hover:bg-ink/90 disabled:cursor-wait disabled:opacity-70"
       >
         {busy ? (
@@ -80,8 +133,8 @@ export function PendingVoteButton() {
         )}
         <span className="truncate">Votación pendiente</span>
         <span className="shrink-0 rounded-full bg-white/15 px-2 py-0.5 text-[11px]">
-          {session.votesRemaining}{" "}
-          {session.votesRemaining === 1 ? "voto" : "votos"}
+          {pending.votesRemaining}{" "}
+          {pending.votesRemaining === 1 ? "voto" : "votos"}
         </span>
         <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
       </button>

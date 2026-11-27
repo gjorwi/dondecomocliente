@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { BusinessDetailSkeleton } from "@/components/detail-skeletons";
 import BusinessClient from "./business-client";
 
 async function BusinessContent({ params }) {
@@ -8,13 +9,7 @@ async function BusinessContent({ params }) {
 
 export default function BusinessPage({ params }) {
   return (
-    <Suspense
-      fallback={
-        <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
-          Cargando establecimiento…
-        </div>
-      }
-    >
+    <Suspense fallback={<BusinessDetailSkeleton />}>
       <BusinessContent params={params} />
     </Suspense>
   );

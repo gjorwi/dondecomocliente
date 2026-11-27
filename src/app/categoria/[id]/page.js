@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { CategoryDetailSkeleton } from "@/components/detail-skeletons";
 import CategoryClient from "./category-client";
 
 async function CategoryContent({ params }) {
@@ -8,13 +9,7 @@ async function CategoryContent({ params }) {
 
 export default function CategoryPage({ params }) {
   return (
-    <Suspense
-      fallback={
-        <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
-          Cargando categoría…
-        </div>
-      }
-    >
+    <Suspense fallback={<CategoryDetailSkeleton />}>
       <CategoryContent params={params} />
     </Suspense>
   );

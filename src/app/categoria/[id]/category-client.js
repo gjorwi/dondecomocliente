@@ -9,6 +9,7 @@ import {
   CategoryChipsSkeleton,
   TopThreePodium,
 } from "@/components/podium";
+import { CategoryDetailSkeleton } from "@/components/detail-skeletons";
 import { MIN_RATINGS_FOR_RANKING } from "@/lib/scoring";
 import { useCategories, useRanking } from "@/lib/hooks";
 
@@ -23,11 +24,7 @@ export default function CategoryClient({ categoryId }) {
   }));
 
   if (isLoading && !category) {
-    return (
-      <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
-        Cargando categoría…
-      </div>
-    );
+    return <CategoryDetailSkeleton />;
   }
 
   if (!category) {

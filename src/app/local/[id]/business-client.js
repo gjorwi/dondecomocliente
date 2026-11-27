@@ -21,6 +21,7 @@ import {
   Pill,
   SectionTitle,
 } from "@/components/ui";
+import { BusinessDetailSkeleton } from "@/components/detail-skeletons";
 import { ShareButton } from "@/components/share-button";
 import { trackBusinessEvent } from "@/lib/api";
 import { formatScore } from "@/lib/scoring";
@@ -107,11 +108,7 @@ export default function BusinessClient({ businessId }) {
   };
 
   if (isLoading && !business) {
-    return (
-      <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
-        Cargando establecimiento…
-      </div>
-    );
+    return <BusinessDetailSkeleton />;
   }
 
   if (!business) {

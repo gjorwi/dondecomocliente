@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight, Heart } from "lucide-react";
 import { BackLink, EmptyState, Pill, RatingLine } from "@/components/ui";
+import { DishDetailSkeleton } from "@/components/detail-skeletons";
 import { ShareButton } from "@/components/share-button";
 import { trackBusinessEvent } from "@/lib/api";
 import { getAdjustedProductScore, MIN_RATINGS_FOR_RANKING } from "@/lib/scoring";
@@ -21,11 +22,7 @@ export default function DishClient({ productId }) {
   const pathname = usePathname();
 
   if (isLoading && !product) {
-    return (
-      <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
-        Cargando plato…
-      </div>
-    );
+    return <DishDetailSkeleton />;
   }
 
   if (!product) {

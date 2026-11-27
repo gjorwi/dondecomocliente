@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { DishDetailSkeleton } from "@/components/detail-skeletons";
 import DishClient from "./dish-client";
 
 async function DishContent({ params }) {
@@ -8,13 +9,7 @@ async function DishContent({ params }) {
 
 export default function DishPage({ params }) {
   return (
-    <Suspense
-      fallback={
-        <div className="rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
-          Cargando plato…
-        </div>
-      }
-    >
+    <Suspense fallback={<DishDetailSkeleton />}>
       <DishContent params={params} />
     </Suspense>
   );
