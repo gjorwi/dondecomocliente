@@ -10,9 +10,11 @@ import {
   MapPin,
   ScanLine,
   Search,
+  Star,
   UserRound,
 } from "lucide-react";
 import { PendingVoteButton } from "@/components/pending-vote-button";
+import { useClientAuth } from "@/components/auth-provider";
 
 const navigation = [
   { href: "/", label: "Explorar", icon: Home },
@@ -22,9 +24,9 @@ const navigation = [
   { href: "/perfil", label: "Perfil", icon: UserRound },
 ];
 
-// La barra inferior solo tiene espacio para cuatro pestañas alrededor del
-// botón de escaneo. Favoritos sigue disponible en el header y el footer.
-const mobileNavigation = navigation.filter(({ href }) => href !== "/favoritos");
+// La barra inferior mantiene cuatro pestañas alrededor del botón de escaneo.
+// Cupones queda accesible desde el header, el inicio, el perfil y el footer.
+const mobileNavigation = navigation.filter(({ href }) => href !== "/cupones");
 
 function isActive(pathname, href) {
   if (href === "/") return pathname === "/";
@@ -33,6 +35,8 @@ function isActive(pathname, href) {
 
 export function AppShell({ children }) {
   const pathname = usePathname();
+  const { user } = useClientAuth();
+  const points = user?.points ?? 0;
   const scanActive = isActive(pathname, "/escanear");
 
   const renderTab = ({ href, label, icon: Icon }) => {
@@ -97,6 +101,20 @@ export function AppShell({ children }) {
                 </Link>
               );
             })}
+            {user ? (
+              <Link
+                href="/recompensas"
+                title="Tus puntos"
+                aria-label={`Tienes ${points} puntos. Ver recompensas`}
+                className="ml-1 flex min-h-10 items-center gap-1.5 rounded-full bg-beige px-3 text-sm font-semibold text-ink transition hover:bg-amber-tint"
+              >
+                <Star
+                  className="h-4 w-4 shrink-0 fill-mustard text-mustard"
+                  aria-hidden="true"
+                />
+                {points}
+              </Link>
+            ) : null}
             <Link
               href="/escanear"
               aria-label="Escanear código QR del local"
@@ -110,9 +128,25 @@ export function AppShell({ children }) {
             </Link>
           </nav>
 
-          <div className="flex min-h-10 items-center gap-1.5 rounded-full bg-beige px-3 text-sm font-semibold text-ink md:hidden lg:flex">
-            <MapPin className="h-4 w-4 text-accent" aria-hidden="true" />
-            Coro
+          <div className="flex items-center gap-1.5 md:hidden">
+            {user ? (
+              <Link
+                href="/recompensas"
+                title="Tus puntos"
+                aria-label={`Tienes ${points} puntos. Ver recompensas`}
+                className="flex min-h-10 items-center gap-1 rounded-full bg-beige px-3 text-sm font-semibold text-ink transition hover:bg-amber-tint"
+              >
+                <Star
+                  className="h-4 w-4 shrink-0 fill-mustard text-mustard"
+                  aria-hidden="true"
+                />
+                {points}
+              </Link>
+            ) : null}
+            <div className="hidden min-h-10 items-center gap-1.5 rounded-full bg-beige px-3 text-sm font-semibold text-ink sm:flex">
+              <MapPin className="h-4 w-4 text-accent" aria-hidden="true" />
+              Coro
+            </div>
           </div>
         </div>
       </header>

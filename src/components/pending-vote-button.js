@@ -10,7 +10,12 @@ import { usePathname, useRouter } from "next/navigation";
 import useSWR from "swr";
 import { ArrowRight, Loader2, Star } from "lucide-react";
 import { useClientAuth } from "@/components/auth-provider";
-import { apiFetch, fetchScanStatus, getDeviceId } from "@/lib/api";
+import {
+  apiFetch,
+  fetchScanStatus,
+  finishVisit,
+  getDeviceId,
+} from "@/lib/api";
 import {
   SCAN_EVENT,
   clearScanSession,
@@ -57,6 +62,7 @@ export function PendingVoteButton() {
     return null;
   }, [localSession, serverPending]);
   const [busy, setBusy] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -110,8 +116,30 @@ export function PendingVoteButton() {
     }
   };
 
+  const finishVoting = async () => {
+    if (busy || finishing || !user) return;
+    const confirmed = window.confirm(
+      "¿Terminar esta votación? No podrás puntuar más platos en este local durante las próximas 24 horas.",
+    );
+    if (!confirmed) return;
+
+    setFinishing(true);
+    setMessage("");
+    try {
+      await finishVisit(pending.visitId);
+      clearScanSession();
+      await mutatePending();
+    } catch (error) {
+      setMessage(
+        error.message || "No pudimos terminar la votación pendiente.",
+      );
+    } finally {
+      setFinishing(false);
+    }
+  };
+
   return (
-    <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] right-4 z-40 max-w-[calc(100vw-2rem)] md:bottom-6 md:right-6">
+    <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-1.5 md:bottom-6 md:right-6">
       <button
         type="button"
         onClick={openVoting}
@@ -138,6 +166,16 @@ export function PendingVoteButton() {
         </span>
         <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
       </button>
+      {user ? (
+        <button
+          type="button"
+          onClick={finishVoting}
+          disabled={finishing}
+          className="inline-flex min-h-8 items-center rounded-full bg-white px-3 text-[11px] font-semibold text-muted shadow-md ring-1 ring-line transition hover:text-accent disabled:cursor-wait disabled:opacity-70"
+        >
+          {finishing ? "Terminando…" : "Terminar votación"}
+        </button>
+      ) : null}
       {message ? (
         <p className="mt-1 rounded-xl bg-white px-3 py-2 text-[11px] leading-4 text-accent shadow-sm">
           {message}

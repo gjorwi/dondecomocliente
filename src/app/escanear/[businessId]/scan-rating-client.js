@@ -18,7 +18,7 @@ import { useClientAuth } from "@/components/auth-provider";
 import { normalizeText } from "@/lib/text";
 import { getAdjustedProductScore } from "@/lib/scoring";
 import { formatPriceSummary } from "@/lib/price";
-import { submitRating, fetchScanStatus, registerScan } from "@/lib/api";
+import { submitRating, fetchScanStatus, registerScan, finishVisit } from "@/lib/api";
 import { getCurrentLocation } from "@/lib/geolocation";
 import { useBusiness, useCategories } from "@/lib/hooks";
 import {
@@ -62,6 +62,8 @@ export default function ScanRatingClient({ businessId }) {
   const [ratings, setRatings] = useState({});
   const [messages, setMessages] = useState({});
   const [submittingId, setSubmittingId] = useState(null);
+  const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState("");
 
   useEffect(() => {
     if (!authReady || !userId) return undefined;
@@ -152,6 +154,30 @@ export default function ScanRatingClient({ businessId }) {
     [categoryId, categoryNames, normalizedQuery, products],
   );
 
+  const handleFinishVoting = async () => {
+    if (!visitId || finishing) return;
+    const confirmed = window.confirm(
+      "¿Terminar esta votación? No podrás puntuar más platos en este local durante las próximas 24 horas.",
+    );
+    if (!confirmed) return;
+
+    setFinishing(true);
+    setFinishError("");
+    try {
+      await finishVisit(visitId);
+      clearScanSession();
+      setVotesRemaining(0);
+      await mutateGlobal("/auth/me");
+      router.push("/");
+    } catch (error) {
+      setFinishError(
+        error.message || "No pudimos terminar la votación. Intenta de nuevo.",
+      );
+    } finally {
+      setFinishing(false);
+    }
+  };
+
   const handleRate = async (product, value) => {
     if (votesRemaining <= 0 || ratings[product.id] || submittingId) return;
 
@@ -182,7 +208,7 @@ export default function ScanRatingClient({ businessId }) {
       const votesText =
         remaining > 0
           ? `Te queda ${remaining} ${remaining === 1 ? "voto" : "votos"} de este escaneo.`
-          : "Usaste los 2 votos de este escaneo.";
+          : "No quedan votos en este escaneo.";
       setMessages((current) => ({
         ...current,
         [product.id]: {
@@ -331,11 +357,24 @@ export default function ScanRatingClient({ businessId }) {
                 >
                   Votar después
                 </button>
+                <button
+                  type="button"
+                  onClick={handleFinishVoting}
+                  disabled={finishing || !visitId}
+                  className="inline-flex min-h-10 items-center rounded-full border border-white/25 px-4 text-xs font-semibold text-white/80 transition hover:border-white/60 hover:text-white disabled:cursor-wait disabled:opacity-60"
+                >
+                  {finishing ? "Terminando…" : "Terminar votación"}
+                </button>
                 <span className="text-[11px] leading-4 text-white/60">
                   Puedes usar tus votos durante las próximas 24 h desde el botón
                   de votación pendiente.
                 </span>
               </div>
+            ) : null}
+            {finishError ? (
+              <p className="mt-2 text-[11px] font-semibold leading-4 text-mustard">
+                {finishError}
+              </p>
             ) : null}
           </div>
         </div>
@@ -343,10 +382,10 @@ export default function ScanRatingClient({ businessId }) {
 
       {votesRemaining === 0 ? (
         <div className="mt-4 rounded-[24px] bg-amber-tint p-4 text-sm leading-6 text-[#6a4700]">
-          <p className="font-semibold">Usaste los 2 votos de este escaneo.</p>
+          <p className="font-semibold">No quedan votos en este escaneo.</p>
           <p className="mt-1 text-xs leading-5">
-            El escaneo queda como histórico. Para seguir puntuando otros platos,
-            vuelve a escanear el QR del local.
+            El escaneo queda como histórico. Podrás volver a escanear este local
+            cuando termine la visita de 24 horas.
           </p>
           <Link
             href="/escanear"

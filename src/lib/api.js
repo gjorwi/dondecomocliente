@@ -78,6 +78,14 @@ export async function fetchScanStatus(businessId) {
   );
 }
 
+export async function finishVisit(visitId) {
+  const deviceId = getDeviceId();
+  return apiFetch(`/client/me/visits/${encodeURIComponent(visitId)}/finish`, {
+    method: "POST",
+    body: JSON.stringify({ deviceId }),
+  });
+}
+
 export async function submitBusinessRequest(data) {
   return apiFetch("/business-requests", {
     method: "POST",
