@@ -13,15 +13,15 @@ export function HomeCoupons() {
         <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
           Beneficios
         </p>
-        <h2 className="truncate font-display text-[22px] leading-tight tracking-[-0.03em] text-ink sm:text-[24px]">
+        <h2 className="font-display text-[20px] leading-tight tracking-[-0.03em] text-ink sm:text-[24px]">
           Cupones para ti
         </h2>
       </div>
       <Link
         href="/cupones"
-        className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-accent px-4 text-xs font-semibold text-white transition hover:bg-[#b33a0d] sm:px-5 sm:text-sm"
+        aria-label="Ver cupones"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white transition hover:bg-[#b33a0d]"
       >
-        Ver cupones
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </Link>
     </section>

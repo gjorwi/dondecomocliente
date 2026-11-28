@@ -201,6 +201,18 @@ export default function BusinessClient({ businessId }) {
             }`}
           />
         </button>
+        {business.logoImage ? (
+          <div className="absolute bottom-4 right-4 h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-white shadow-md sm:h-24 sm:w-24">
+            <Image
+              src={business.logoImage}
+              alt={`Logo de ${business.name}`}
+              width={96}
+              height={96}
+              unoptimized
+              className="h-full w-full object-cover"
+            />
+          </div>
+        ) : null}
       </section>
 
       <div className="mt-5">

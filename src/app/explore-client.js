@@ -116,7 +116,6 @@ export default function ExploreClient() {
 
       <SectionTitle
         title="Mejores por categoría"
-        description="Los tres mejor puntuados de cada categoría. Elige una para ver su podio."
         action={activeCategoryId ? "Ver todos" : undefined}
         href={activeCategoryId ? `/categoria/${activeCategoryId}` : undefined}
       />
@@ -188,7 +187,6 @@ export default function ExploreClient() {
 
       <SectionTitle
         title={onlyOpen ? "Locales abiertos ahora" : "Locales recomendados"}
-        description="Ordenados por la puntuación calculada de sus platos."
         action="Ver todos"
         href="/buscar"
       />

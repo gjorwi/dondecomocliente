@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Store } from "lucide-react";
 import { PromoCard } from "@/components/ui";
@@ -51,6 +52,45 @@ function PlatformPromoCard() {
   );
 }
 
+function BusinessAdCard({ promotion }) {
+  return (
+    <Link
+      href={`/local/${promotion.businessId}`}
+      className="group relative flex w-[86vw] max-w-[420px] shrink-0 snap-start items-center gap-3 overflow-hidden rounded-[20px] border border-accent/25 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:w-[420px]"
+    >
+      <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-tint text-[26px] ring-2 ring-amber-tint">
+        {promotion.logoImage ? (
+          <Image
+            src={promotion.logoImage}
+            alt={`Logo de ${promotion.businessName}`}
+            width={56}
+            height={56}
+            unoptimized
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          promotion.emoji
+        )}
+      </span>
+      <div className="min-w-0 flex-1">
+        <span className="inline-flex rounded-full bg-amber-tint px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#6a4700]">
+          {promotion.badge}
+        </span>
+        <h3 className="mt-1 truncate font-display text-[18px] leading-tight tracking-[-0.03em] text-ink">
+          {promotion.title}
+        </h3>
+        <p className="truncate text-[11px] text-muted">
+          {promotion.note || promotion.businessName}
+        </p>
+      </div>
+      <ArrowRight
+        className="h-4 w-4 shrink-0 text-accent transition group-hover:translate-x-0.5"
+        aria-hidden="true"
+      />
+    </Link>
+  );
+}
+
 export function PromoCarousel({ promotions, loading = false }) {
   const trackRef = useRef(null);
   const [canPrev, setCanPrev] = useState(false);
@@ -96,16 +136,7 @@ export function PromoCarousel({ promotions, loading = false }) {
 
   return (
     <section aria-roledescription="carrusel" aria-label="Promociones destacadas">
-      <div className="mb-3 mt-8 flex items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="font-display text-[24px] leading-tight tracking-[-0.03em] text-ink">
-            Promociones destacadas
-          </h2>
-          <p className="mt-1 text-sm leading-5 text-muted">
-            Ofertas de hoy en Coro. Desliza para ver más.
-          </p>
-        </div>
-
+      <div className="mb-3 mt-8 flex items-center justify-end gap-2">
         {!loading && promotions.length ? (
         <div className="hidden shrink-0 gap-2 md:flex">
           <button
@@ -137,9 +168,13 @@ export function PromoCarousel({ promotions, loading = false }) {
         <PlatformPromoCard />
         {loading
           ? [0, 1].map((index) => <PromoCardSkeleton key={index} />)
-          : promotions.map((promotion) => (
-              <PromoCard key={promotion.id} promotion={promotion} />
-            ))}
+          : promotions.map((promotion) =>
+              promotion.type === "business" ? (
+                <BusinessAdCard key={promotion.id} promotion={promotion} />
+              ) : (
+                <PromoCard key={promotion.id} promotion={promotion} />
+              ),
+            )}
       </div>
     </section>
   );

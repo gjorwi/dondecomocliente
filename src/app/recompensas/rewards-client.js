@@ -26,6 +26,45 @@ function formatDate(value) {
   }).format(date);
 }
 
+function RewardsSkeleton() {
+  return (
+    <div className="mx-auto max-w-4xl" aria-busy="true" aria-label="Cargando recompensas">
+      <div className="h-3 w-20 animate-pulse rounded-full bg-line/60" />
+      <div className="mt-3 h-9 w-64 max-w-full animate-pulse rounded-2xl bg-line/60" />
+      <div className="mt-3 h-4 w-full max-w-md animate-pulse rounded-full bg-line/40" />
+
+      <div className="mt-6 h-[168px] animate-pulse rounded-[28px] bg-line/40" />
+
+      <div className="mt-6">
+        <div className="h-7 w-32 animate-pulse rounded-xl bg-line/60" />
+        <div className="mt-2 h-4 w-72 max-w-full animate-pulse rounded-full bg-line/40" />
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="h-[150px] animate-pulse rounded-[24px] border border-line/50 bg-white/70" />
+          <div className="h-[150px] animate-pulse rounded-[24px] border border-line/50 bg-white/70" />
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <div className="h-7 w-56 max-w-full animate-pulse rounded-xl bg-line/60" />
+        <div className="mt-3 space-y-px overflow-hidden rounded-[24px] border border-line/50 bg-white/70">
+          {[0, 1, 2].map((row) => (
+            <div
+              key={row}
+              className="flex items-center gap-3 px-4 py-3.5"
+            >
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 w-2/3 animate-pulse rounded-full bg-line/50" />
+                <div className="h-2.5 w-1/3 animate-pulse rounded-full bg-line/40" />
+              </div>
+              <div className="h-4 w-10 animate-pulse rounded-full bg-line/50" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RewardsClient() {
   const { user, ready } = useClientAuth();
   const { data: pointsData, isLoading: pointsLoading } = useSWR(
@@ -37,12 +76,10 @@ export default function RewardsClient() {
     apiFetch,
   );
 
-  if (!ready || (user && (pointsLoading || achievementsLoading))) {
-    return (
-      <div className="mx-auto max-w-3xl rounded-[24px] bg-soft p-8 text-center text-sm text-muted">
-        Cargando recompensas…
-      </div>
-    );
+  const loading = Boolean(user) && (pointsLoading || achievementsLoading);
+
+  if (!ready) {
+    return <RewardsSkeleton />;
   }
 
   if (!user) {
@@ -101,9 +138,13 @@ export default function RewardsClient() {
           </span>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Pill tone="amber">
-            {unlockedCount} de {achievements.length} logros
-          </Pill>
+          {loading ? (
+            <span className="inline-flex h-8 w-32 animate-pulse rounded-full bg-white/20" />
+          ) : (
+            <Pill tone="amber">
+              {unlockedCount} de {achievements.length} logros
+            </Pill>
+          )}
           <Link
             href="/cupones"
             className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-xs font-semibold text-accent transition hover:bg-white/90"
@@ -128,7 +169,12 @@ export default function RewardsClient() {
           <Trophy className="h-6 w-6 text-mustard" aria-hidden="true" />
         </div>
 
-        {achievements.length ? (
+        {loading ? (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="h-[150px] animate-pulse rounded-[24px] border border-line/50 bg-white/70" />
+            <div className="h-[150px] animate-pulse rounded-[24px] border border-line/50 bg-white/70" />
+          </div>
+        ) : achievements.length ? (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {achievements.map((achievement) => {
               const progress = Math.min(
@@ -212,7 +258,24 @@ export default function RewardsClient() {
           </h2>
         </div>
 
-        {history.length ? (
+        {loading ? (
+          <div className="mt-3 overflow-hidden rounded-[24px] border border-line/50 bg-white/70">
+            {[0, 1, 2].map((row) => (
+              <div
+                key={row}
+                className={`flex items-center gap-3 px-4 py-3 ${
+                  row > 0 ? "border-t border-line/60" : ""
+                }`}
+              >
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 w-2/3 animate-pulse rounded-full bg-line/50" />
+                  <div className="h-2.5 w-1/3 animate-pulse rounded-full bg-line/40" />
+                </div>
+                <div className="h-4 w-10 animate-pulse rounded-full bg-line/50" />
+              </div>
+            ))}
+          </div>
+        ) : history.length ? (
           <div className="mt-3 overflow-hidden rounded-[24px] border border-line/70 bg-white/70 shadow-sm">
             {history.map((transaction, index) => (
               <div
