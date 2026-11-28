@@ -74,7 +74,7 @@ export default function ExploreClient() {
 
   return (
     <div>
-      <section className="relative overflow-hidden rounded-[32px] bg-accent px-5 py-8 text-white sm:px-8 sm:py-10">
+      <section className="relative overflow-hidden rounded-[32px] bg-accent px-5 py-5 text-white sm:px-8 sm:py-6">
         <div className="relative z-10">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">

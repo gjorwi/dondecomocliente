@@ -210,6 +210,8 @@ export default function RewardsClient() {
                         </h3>
                         {unlocked ? (
                           <Pill tone="open">Desbloqueado</Pill>
+                        ) : achievement.hidden ? (
+                          <Pill tone="amber">Secreto</Pill>
                         ) : (
                           <Pill tone="beige">En progreso</Pill>
                         )}
@@ -220,25 +222,31 @@ export default function RewardsClient() {
                     </div>
                   </div>
 
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between text-[11px] font-semibold text-muted">
-                      <span>
-                        {progress} / {achievement.requirementValue}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-accent">
-                        <Sparkles className="h-3.5 w-3.5" />
-                        +{achievement.rewardPoints} pts
-                      </span>
+                  {achievement.hidden && !unlocked ? (
+                    <p className="mt-3 rounded-2xl bg-beige/70 px-3 py-2 text-[11px] font-semibold text-muted">
+                      Logro secreto. Sigue explorando para descubrirlo.
+                    </p>
+                  ) : (
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between text-[11px] font-semibold text-muted">
+                        <span>
+                          {progress} / {achievement.requirementValue}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-accent">
+                          <Sparkles className="h-3.5 w-3.5" />
+                          +{achievement.rewardPoints} pts
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line/60">
+                        <div
+                          className={`h-full rounded-full ${
+                            unlocked ? "bg-open" : "bg-accent"
+                          }`}
+                          style={{ width: `${Math.min(100, percent)}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line/60">
-                      <div
-                        className={`h-full rounded-full ${
-                          unlocked ? "bg-open" : "bg-accent"
-                        }`}
-                        style={{ width: `${Math.min(100, percent)}%` }}
-                      />
-                    </div>
-                  </div>
+                  )}
                 </article>
               );
             })}

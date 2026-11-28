@@ -67,7 +67,7 @@ export function AppShell({ children }) {
             className="flex shrink-0 items-center gap-1.5 font-display text-[24px] leading-none tracking-[-0.055em] sm:gap-2 sm:text-[26px]"
           >
             <Image
-              src="/logoreal.jpeg"
+              src="/logoreal.png"
               alt=""
               width={40}
               height={40}
@@ -160,7 +160,7 @@ export function AppShell({ children }) {
           <div>
             <Link href="/" aria-label="comidasTop, ir al inicio" className="flex items-center gap-2">
               <Image
-                src="/logoreal.jpeg"
+                src="/logoreal.png"
                 alt=""
                 width={40}
                 height={40}
