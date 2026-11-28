@@ -134,13 +134,15 @@ export default function ExploreClient() {
             <TopThreePodium loading />
           </div>
         </div>
-      ) : chipCategories.length ? (
+      ) : (
         <>
-          <CategoryChips
-            categories={chipCategories}
-            activeId={activeCategoryId}
-            onSelect={setSelectedCategoryId}
-          />
+          {chipCategories.length ? (
+            <CategoryChips
+              categories={chipCategories}
+              activeId={activeCategoryId}
+              onSelect={setSelectedCategoryId}
+            />
+          ) : null}
 
           <div className="mt-4">
             {rankingLoading ? (
@@ -149,23 +151,24 @@ export default function ExploreClient() {
                 categoryLabel={activeCategoryLabel}
                 categoryImage={activeCategoryImage}
               />
-            ) : ranking.length ? (
-              <TopThreePodium
-                entries={ranking}
-                categoryLabel={activeCategoryLabel}
-                categoryImage={activeCategoryImage}
-              />
             ) : (
-              <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
-                Aún no hay suficientes puntuaciones en esta categoría.
-              </div>
+              <>
+                <TopThreePodium
+                  entries={ranking}
+                  categoryLabel={activeCategoryLabel}
+                  categoryImage={activeCategoryImage}
+                />
+                {!ranking.length ? (
+                  <p className="mt-3 text-center text-xs font-semibold leading-5 text-muted">
+                    {chipCategories.length
+                      ? "Aún no hay suficientes puntuaciones en esta categoría."
+                      : "Aún no hay categorías disponibles para mostrar un Top."}
+                  </p>
+                ) : null}
+              </>
             )}
           </div>
         </>
-      ) : (
-        <div className="rounded-[24px] bg-soft p-6 text-center text-sm text-muted">
-          Aún no hay categorías disponibles para mostrar un Top.
-        </div>
       )}
 
       <div className="mt-7 flex items-center justify-between gap-3 rounded-[24px] bg-white px-4 py-3.5 shadow-sm">

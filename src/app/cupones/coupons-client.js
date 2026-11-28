@@ -5,12 +5,14 @@ import Link from "next/link";
 import useSWR, { useSWRConfig } from "swr";
 import {
   Check,
+  ChevronDown,
   Clock3,
   Gift,
   Loader2,
   MapPin,
   RefreshCw,
   Search,
+  SlidersHorizontal,
   Star,
 } from "lucide-react";
 import { GoogleLoginButton } from "@/components/google-login-button";
@@ -65,9 +67,23 @@ export default function CouponsClient() {
   const [business, setBusiness] = useState("todos");
   const [maxPoints, setMaxPoints] = useState("");
   const [sort, setSort] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [busyId, setBusyId] = useState("");
   const [message, setMessage] = useState("");
   const [messageError, setMessageError] = useState(false);
+
+  const activeFilterCount =
+    (category !== "todas" ? 1 : 0) +
+    (business !== "todos" ? 1 : 0) +
+    (maxPoints ? 1 : 0) +
+    (sort ? 1 : 0);
+
+  const clearFilters = () => {
+    setCategory("todas");
+    setBusiness("todos");
+    setMaxPoints("");
+    setSort("");
+  };
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -256,8 +272,8 @@ export default function CouponsClient() {
 
       {tab === "available" ? (
         <>
-          <div className="mt-4 grid gap-2 rounded-[24px] border border-line/70 bg-white p-3 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
-            <label className="relative sm:col-span-2 lg:col-span-1">
+          <div className="mt-4 flex items-center gap-2">
+            <label className="relative min-w-0 flex-1">
               <Search
                 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
                 aria-hidden="true"
@@ -266,59 +282,112 @@ export default function CouponsClient() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar cupón o negocio"
-                className="min-h-10 w-full rounded-full border border-line bg-soft pl-9 pr-3 text-xs text-ink outline-none focus:border-accent/60"
+                className="min-h-11 w-full rounded-full border border-line bg-white pl-9 pr-3 text-sm text-ink shadow-sm outline-none focus:border-accent/60"
               />
             </label>
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              className="min-h-10 rounded-full border border-line bg-soft px-3 text-xs font-semibold text-ink outline-none focus:border-accent/60"
-              aria-label="Filtrar por categoría"
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((current) => !current)}
+              aria-expanded={filtersOpen}
+              aria-controls="coupon-filters"
+              className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition ${
+                activeFilterCount
+                  ? "border-accent/40 bg-accent-tint text-accent"
+                  : "border-line bg-white text-ink shadow-sm hover:bg-soft"
+              }`}
             >
-              <option value="todas">Todas las categorías</option>
-              {categories.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={business}
-              onChange={(event) => setBusiness(event.target.value)}
-              className="min-h-10 rounded-full border border-line bg-soft px-3 text-xs font-semibold text-ink outline-none focus:border-accent/60"
-              aria-label="Filtrar por negocio"
-            >
-              <option value="todos">Todos los negocios</option>
-              {businesses.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={maxPoints}
-              onChange={(event) => setMaxPoints(event.target.value)}
-              className="min-h-10 rounded-full border border-line bg-soft px-3 text-xs font-semibold text-ink outline-none focus:border-accent/60"
-              aria-label="Filtrar por puntos"
-            >
-              <option value="">Cualquier costo</option>
-              <option value="20">Hasta 20 puntos</option>
-              <option value="50">Hasta 50 puntos</option>
-              <option value="100">Hasta 100 puntos</option>
-              <option value="200">Hasta 200 puntos</option>
-              <option value="500">Hasta 500 puntos</option>
-            </select>
-            <select
-              value={sort}
-              onChange={(event) => setSort(event.target.value)}
-              className="min-h-10 rounded-full border border-line bg-soft px-3 text-xs font-semibold text-ink outline-none focus:border-accent/60 sm:col-span-2 lg:col-span-1"
-              aria-label="Ordenar cupones"
-            >
-              <option value="">Orden recomendado</option>
-              <option value="points_asc">Menor costo en puntos</option>
-              <option value="points_desc">Mayor costo en puntos</option>
-            </select>
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              Filtros
+              {activeFilterCount ? (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] text-white">
+                  {activeFilterCount}
+                </span>
+              ) : null}
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${
+                  filtersOpen ? "rotate-180" : ""
+                }`}
+                aria-hidden="true"
+              />
+            </button>
           </div>
+
+          {filtersOpen ? (
+            <div
+              id="coupon-filters"
+              className="mt-2 rounded-[24px] border border-line/70 bg-white p-3 shadow-sm"
+            >
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <select
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                  className="min-h-10 w-full rounded-full border border-line bg-soft px-3 text-xs font-semibold text-ink outline-none focus:border-accent/60"
+                  aria-label="Filtrar por categoría"
+                >
+                  <option value="todas">Todas las categorías</option>
+                  {categories.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={business}
+                  onChange={(event) => setBusiness(event.target.value)}
+                  className="min-h-10 w-full rounded-full border border-line bg-soft px-3 text-xs font-semibold text-ink outline-none focus:border-accent/60"
+                  aria-label="Filtrar por negocio"
+                >
+                  <option value="todos">Todos los negocios</option>
+                  {businesses.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={maxPoints}
+                  onChange={(event) => setMaxPoints(event.target.value)}
+                  className="min-h-10 w-full rounded-full border border-line bg-soft px-3 text-xs font-semibold text-ink outline-none focus:border-accent/60"
+                  aria-label="Filtrar por puntos"
+                >
+                  <option value="">Cualquier costo</option>
+                  <option value="20">Hasta 20 puntos</option>
+                  <option value="50">Hasta 50 puntos</option>
+                  <option value="100">Hasta 100 puntos</option>
+                  <option value="200">Hasta 200 puntos</option>
+                  <option value="500">Hasta 500 puntos</option>
+                </select>
+                <select
+                  value={sort}
+                  onChange={(event) => setSort(event.target.value)}
+                  className="min-h-10 w-full rounded-full border border-line bg-soft px-3 text-xs font-semibold text-ink outline-none focus:border-accent/60"
+                  aria-label="Ordenar cupones"
+                >
+                  <option value="">Orden recomendado</option>
+                  <option value="points_asc">Menor costo en puntos</option>
+                  <option value="points_desc">Mayor costo en puntos</option>
+                </select>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2 px-1">
+                <p className="text-[11px] text-muted">
+                  {activeFilterCount
+                    ? `${activeFilterCount} ${
+                        activeFilterCount === 1 ? "filtro activo" : "filtros activos"
+                      }`
+                    : "Sin filtros activos"}
+                </p>
+                {activeFilterCount ? (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="text-xs font-semibold text-accent hover:underline"
+                  >
+                    Limpiar filtros
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           {couponsLoading ? (
             <div className="mt-4 rounded-[24px] bg-soft p-6 text-center text-sm text-muted">

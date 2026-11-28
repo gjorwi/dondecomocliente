@@ -228,7 +228,7 @@ export function TopThreePodium({
       <div className="relative z-10 mx-auto max-w-lg">
         <p className="mb-4 flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a5a00]">
           <Trophy className="h-3.5 w-3.5" aria-hidden="true" />
-          Podio de {categoryLabel || "la categoría"}
+          Podio de {categoryLabel || "categorías"}
           {loading ? (
             <Loader2
               className="h-3 w-3 animate-spin"
