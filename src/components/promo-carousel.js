@@ -188,6 +188,7 @@ export function PromoCarousel({ promotions, loading = false }) {
 
   return (
     <section
+      className="relative mt-5"
       aria-roledescription="carrusel"
       aria-label="Promociones destacadas"
       onPointerEnter={() => setPaused(true)}
@@ -197,36 +198,10 @@ export function PromoCarousel({ promotions, loading = false }) {
       onTouchStart={() => setPaused(true)}
       onTouchEnd={() => setPaused(false)}
     >
-      <div className="mb-2 flex items-center justify-end gap-2 md:mt-3">
-        {!loading && promotions.length ? (
-        <div className="hidden shrink-0 gap-2 md:flex">
-          <button
-            type="button"
-            onClick={() => slide(-1)}
-            disabled={!canPrev}
-            aria-label="Ver promociones anteriores"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-ink shadow-sm transition hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            onClick={() => slide(1)}
-            disabled={!canNext}
-            aria-label="Ver más promociones"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-ink shadow-sm transition hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-        ) : null}
-      </div>
-
       <div
         ref={trackRef}
         className="no-scrollbar -mx-4 flex flex-nowrap snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:scroll-px-6 sm:px-6"
       >
-        <PlatformPromoCard />
         {loading
           ? [0, 1].map((index) => <PromoCardSkeleton key={index} />)
           : promotions.map((promotion) =>
@@ -236,7 +211,31 @@ export function PromoCarousel({ promotions, loading = false }) {
                 <PromoCard key={promotion.id} promotion={promotion} />
               ),
             )}
+        <PlatformPromoCard />
       </div>
+
+      {!loading && promotions.length ? (
+        <div className="pointer-events-none absolute right-0 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-2 md:flex">
+          <button
+            type="button"
+            onClick={() => slide(-1)}
+            disabled={!canPrev}
+            aria-label="Ver promociones anteriores"
+            className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white/95 text-ink shadow-md backdrop-blur transition hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => slide(1)}
+            disabled={!canNext}
+            aria-label="Ver más promociones"
+            className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white/95 text-ink shadow-md backdrop-blur transition hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

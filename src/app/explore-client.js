@@ -101,7 +101,7 @@ export default function ExploreClient() {
         </span>
       </section>
 
-      <div className="mx-auto mt-4 max-w-3xl">
+      <div className="mx-auto mt-5 max-w-3xl">
         <SearchField
           value={query}
           onChange={setQuery}
