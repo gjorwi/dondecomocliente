@@ -34,6 +34,10 @@ export default function ExploreClient() {
   const { businesses, isLoading: businessesLoading } = useBusinesses();
   const { promotions, isLoading: promotionsLoading } = usePromotions();
 
+  const availableCategories = categories.filter(
+    (category) => category.available !== false,
+  );
+
   const chipCategories = categories
     .filter((category) => category.top)
     .map((category) => ({
@@ -82,9 +86,9 @@ export default function ExploreClient() {
           </div>
           {categoriesLoading ? (
             <CategoryChipsSkeleton className="mt-5" />
-          ) : (
+          ) : availableCategories.length ? (
             <div className="no-scrollbar mt-5 flex w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-              {categories.map((category) => (
+              {availableCategories.map((category) => (
                 <Link
                   key={category.id}
                   href={`/buscar?categoria=${category.id}`}
@@ -94,6 +98,10 @@ export default function ExploreClient() {
                 </Link>
               ))}
             </div>
+          ) : (
+            <p className="mt-5 text-xs font-semibold text-white/75">
+              Aún no hay categorías con platos publicados.
+            </p>
           )}
         </div>
         <span className="pointer-events-none absolute -right-12 -top-10 hidden text-[190px] opacity-20 sm:block">

@@ -215,7 +215,7 @@ export function PromoCarousel({ promotions, loading = false }) {
       </div>
 
       {!loading && promotions.length ? (
-        <div className="pointer-events-none absolute right-0 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-2 md:flex">
+        <div className="pointer-events-none absolute -top-12 right-0 z-10 hidden items-center gap-2 lg:flex">
           <button
             type="button"
             onClick={() => slide(-1)}

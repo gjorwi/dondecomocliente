@@ -106,6 +106,9 @@ function SearchContent({ initialQuery, initialCategory }) {
   );
   const filtersExpanded = filtersOpen ?? isDesktop;
   const { categories } = useCategories();
+  const availableCategories = categories.filter(
+    (category) => category.available !== false,
+  );
   const { products, isLoading: productsLoading } = useProducts();
   const { businesses, isLoading: businessesLoading } = useBusinesses();
   const businessMap = useMemo(
@@ -296,6 +299,29 @@ function SearchContent({ initialQuery, initialCategory }) {
         />
       </div>
 
+      <div className="mt-4 w-full min-w-0 max-w-3xl">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          Categorías
+        </p>
+        <div className="no-scrollbar mt-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1">
+          <Chip
+            selected={categoryId === "todos"}
+            onClick={() => setCategoryId("todos")}
+          >
+            Todas
+          </Chip>
+          {availableCategories.map((category) => (
+            <Chip
+              key={category.id}
+              selected={categoryId === category.id}
+              onClick={() => setCategoryId(category.id)}
+            >
+              {category.label}
+            </Chip>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-3">
         <button
           type="button"
@@ -352,29 +378,6 @@ function SearchContent({ initialQuery, initialCategory }) {
                 onClick={() => setType(item.id)}
               >
                 {item.label}
-              </Chip>
-            ))}
-          </div>
-        </div>
-
-        <div className="w-full min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-            Categoría
-          </p>
-          <div className="no-scrollbar mt-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1">
-            <Chip
-              selected={categoryId === "todos"}
-              onClick={() => setCategoryId("todos")}
-            >
-              Todas
-            </Chip>
-            {categories.map((category) => (
-              <Chip
-                key={category.id}
-                selected={categoryId === category.id}
-                onClick={() => setCategoryId(category.id)}
-              >
-                {category.label}
               </Chip>
             ))}
           </div>
@@ -510,7 +513,8 @@ function SearchResults() {
   const initialQuery = searchParams.get("q") || "";
   const requestedCategory = searchParams.get("categoria") || "todos";
   const initialCategory = categories.some(
-    (category) => category.id === requestedCategory,
+    (category) =>
+      category.id === requestedCategory && category.available !== false,
   )
     ? requestedCategory
     : "todos";
