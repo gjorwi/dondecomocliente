@@ -64,15 +64,15 @@ export function AppShell({ children }) {
           <Link
             href="/"
             aria-label="comidasTop, ir al inicio"
-            className="flex shrink-0 items-center gap-2 font-display text-[24px] leading-none tracking-[-0.055em] sm:gap-2.5 sm:text-[26px]"
+            className="flex shrink-0 items-center gap-1.5 font-display text-[24px] leading-none tracking-[-0.055em] sm:gap-2 sm:text-[26px]"
           >
             <Image
-              src="/logo.jpg"
+              src="/logoreal.jpeg"
               alt=""
               width={40}
               height={40}
               priority
-              className="h-8 w-8 shrink-0 rounded-full object-contain sm:h-10 sm:w-10"
+              className="h-11 w-11 shrink-0 rounded-full object-contain sm:h-[52px] sm:w-[52px]"
             />
             <span>
               <span className="text-ink">comidas</span>
@@ -160,11 +160,11 @@ export function AppShell({ children }) {
           <div>
             <Link href="/" aria-label="comidasTop, ir al inicio" className="flex items-center gap-2">
               <Image
-                src="/logo.jpg"
+                src="/logoreal.jpeg"
                 alt=""
                 width={40}
                 height={40}
-                className="h-9 w-9 rounded-full object-contain"
+                className="h-11 w-11 rounded-full object-contain"
               />
               <span className="font-display text-[22px] leading-none tracking-[-0.05em]">
                 <span className="text-white">comidas</span>
