@@ -56,37 +56,58 @@ function BusinessAdCard({ promotion }) {
   return (
     <Link
       href={`/local/${promotion.businessId}`}
-      className="group relative flex w-[86vw] max-w-[420px] shrink-0 snap-start items-center gap-3 overflow-hidden rounded-[20px] border border-accent/25 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:w-[420px]"
+      className="group relative flex min-h-[112px] w-[86vw] max-w-[420px] shrink-0 snap-start overflow-hidden rounded-[20px] bg-ink shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:w-[420px]"
     >
-      <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-tint text-[26px] ring-2 ring-amber-tint">
-        {promotion.logoImage ? (
-          <Image
-            src={promotion.logoImage}
-            alt={`Logo de ${promotion.businessName}`}
-            width={56}
-            height={56}
-            unoptimized
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          promotion.emoji
-        )}
-      </span>
-      <div className="min-w-0 flex-1">
-        <span className="inline-flex rounded-full bg-amber-tint px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#6a4700]">
-          {promotion.badge}
-        </span>
-        <h3 className="mt-1 truncate font-display text-[18px] leading-tight tracking-[-0.03em] text-ink">
-          {promotion.title}
-        </h3>
-        <p className="truncate text-[11px] text-muted">
-          {promotion.note || promotion.businessName}
-        </p>
-      </div>
-      <ArrowRight
-        className="h-4 w-4 shrink-0 text-accent transition group-hover:translate-x-0.5"
+      {promotion.coverImage ? (
+        <Image
+          src={promotion.coverImage}
+          alt=""
+          fill
+          unoptimized
+          sizes="(max-width: 640px) 86vw, 420px"
+          className="object-cover"
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-br from-accent to-[#8f2f0b]"
+        />
+      )}
+      <span
         aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-r from-ink/85 via-ink/60 to-ink/20"
       />
+      <div className="relative z-10 flex w-full items-center gap-3 p-3 text-white">
+        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/80 bg-white/15 text-[22px]">
+          {promotion.logoImage ? (
+            <Image
+              src={promotion.logoImage}
+              alt={`Logo de ${promotion.businessName}`}
+              width={48}
+              height={48}
+              unoptimized
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            promotion.emoji
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          <span className="inline-flex rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-white">
+            {promotion.badge}
+          </span>
+          <h3 className="mt-1 truncate font-display text-[18px] leading-tight tracking-[-0.03em] text-white">
+            {promotion.title}
+          </h3>
+          <p className="truncate text-[11px] text-white/75">
+            {promotion.note || promotion.businessName}
+          </p>
+        </div>
+        <ArrowRight
+          className="h-4 w-4 shrink-0 text-white transition group-hover:translate-x-0.5"
+          aria-hidden="true"
+        />
+      </div>
     </Link>
   );
 }
@@ -95,6 +116,8 @@ export function PromoCarousel({ promotions, loading = false }) {
   const trackRef = useRef(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const promotionCount = promotions.length;
 
   const updateArrows = useCallback(() => {
     const track = trackRef.current;
@@ -134,9 +157,47 @@ export function PromoCarousel({ promotions, loading = false }) {
     track.scrollBy({ left: direction * cardWidth, behavior: "smooth" });
   };
 
+  useEffect(() => {
+    if (loading || paused || !promotionCount) return undefined;
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      const track = trackRef.current;
+      if (!track || document.hidden) return;
+
+      const firstCard = track.firstElementChild;
+      const cardWidth = firstCard
+        ? firstCard.getBoundingClientRect().width + 12
+        : track.clientWidth * 0.8;
+      const atEnd =
+        track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
+
+      track.scrollTo({
+        left: atEnd ? 0 : track.scrollLeft + cardWidth,
+        behavior: "smooth",
+      });
+    }, 5000);
+
+    return () => window.clearInterval(interval);
+  }, [loading, paused, promotionCount]);
+
   return (
-    <section aria-roledescription="carrusel" aria-label="Promociones destacadas">
-      <div className="mb-3 mt-8 flex items-center justify-end gap-2">
+    <section
+      aria-roledescription="carrusel"
+      aria-label="Promociones destacadas"
+      onPointerEnter={() => setPaused(true)}
+      onPointerLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+      onTouchStart={() => setPaused(true)}
+      onTouchEnd={() => setPaused(false)}
+    >
+      <div className="mb-2 flex items-center justify-end gap-2 md:mt-3">
         {!loading && promotions.length ? (
         <div className="hidden shrink-0 gap-2 md:flex">
           <button

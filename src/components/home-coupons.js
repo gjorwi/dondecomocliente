@@ -5,7 +5,7 @@ import { ArrowRight, Gift } from "lucide-react";
 
 export function HomeCoupons() {
   return (
-    <section className="mt-8 flex items-center gap-3 rounded-[24px] bg-white p-4 shadow-sm sm:gap-4 sm:p-5">
+    <section className="mt-4 flex items-center gap-3 rounded-[24px] bg-white p-4 shadow-sm sm:gap-4 sm:p-5">
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-green-tint text-open sm:h-12 sm:w-12">
         <Gift className="h-6 w-6" aria-hidden="true" />
       </span>
