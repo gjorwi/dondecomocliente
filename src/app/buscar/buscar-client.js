@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState, useSyncExternalStore } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowDownWideNarrow,
@@ -30,22 +30,6 @@ const resultTypes = [
   { id: "platos", label: "Platos" },
   { id: "locales", label: "Locales" },
 ];
-
-const DESKTOP_MEDIA_QUERY = "(min-width: 768px)";
-
-function subscribeToDesktop(callback) {
-  const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
-  mediaQuery.addEventListener("change", callback);
-  return () => mediaQuery.removeEventListener("change", callback);
-}
-
-function getDesktopSnapshot() {
-  return window.matchMedia(DESKTOP_MEDIA_QUERY).matches;
-}
-
-function getDesktopServerSnapshot() {
-  return false;
-}
 
 function getDistanceKm(business, origin) {
   const lat = business?.location?.lat;
@@ -98,13 +82,7 @@ function SearchContent({ initialQuery, initialCategory }) {
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState("");
   const [locationLoading, setLocationLoading] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(null);
-  const isDesktop = useSyncExternalStore(
-    subscribeToDesktop,
-    getDesktopSnapshot,
-    getDesktopServerSnapshot,
-  );
-  const filtersExpanded = filtersOpen ?? isDesktop;
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const { categories } = useCategories();
   const availableCategories = categories.filter(
     (category) => category.available !== false,
@@ -281,15 +259,12 @@ function SearchContent({ initialQuery, initialCategory }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
           Buscar en Coro
         </p>
-        <h1 className="mt-2 font-display text-[38px] leading-none tracking-[-0.045em] text-ink">
+        <h1 className="mt-1.5 font-display text-[28px] leading-none tracking-[-0.04em] text-ink sm:text-[34px]">
           Encuentra tu próximo plato
         </h1>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          Busca por plato, establecimiento, municipio, parroquia, sector o categoría.
-        </p>
       </div>
 
-      <div className="mt-5 w-full min-w-0 max-w-3xl">
+      <div className="mt-4 w-full min-w-0 max-w-3xl">
         <SearchField
           value={query}
           onChange={setQuery}
@@ -299,34 +274,11 @@ function SearchContent({ initialQuery, initialCategory }) {
         />
       </div>
 
-      <div className="mt-4 w-full min-w-0 max-w-3xl">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-          Categorías
-        </p>
-        <div className="no-scrollbar mt-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1">
-          <Chip
-            selected={categoryId === "todos"}
-            onClick={() => setCategoryId("todos")}
-          >
-            Todas
-          </Chip>
-          {availableCategories.map((category) => (
-            <Chip
-              key={category.id}
-              selected={categoryId === category.id}
-              onClick={() => setCategoryId(category.id)}
-            >
-              {category.label}
-            </Chip>
-          ))}
-        </div>
-      </div>
-
       <div className="mt-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-3">
         <button
           type="button"
-          onClick={() => setFiltersOpen((current) => !(current ?? isDesktop))}
-          aria-expanded={filtersExpanded}
+          onClick={() => setFiltersOpen((current) => !current)}
+          aria-expanded={filtersOpen}
           aria-controls="search-filters"
           className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${
             activeFilterCount
@@ -343,7 +295,7 @@ function SearchContent({ initialQuery, initialCategory }) {
           ) : null}
           <ChevronDown
             className={`h-4 w-4 transition-transform ${
-              filtersExpanded ? "rotate-180" : ""
+              filtersOpen ? "rotate-180" : ""
             }`}
             aria-hidden="true"
           />
@@ -363,9 +315,32 @@ function SearchContent({ initialQuery, initialCategory }) {
       <div
         id="search-filters"
         className={`mt-3 w-full min-w-0 gap-4 overflow-hidden rounded-[24px] border border-line/70 bg-white p-4 shadow-sm ${
-          filtersExpanded ? "grid" : "hidden"
+          filtersOpen ? "grid" : "hidden"
         }`}
       >
+        <div className="w-full min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+            Categoría
+          </p>
+          <div className="no-scrollbar mt-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1">
+            <Chip
+              selected={categoryId === "todos"}
+              onClick={() => setCategoryId("todos")}
+            >
+              Todas
+            </Chip>
+            {availableCategories.map((category) => (
+              <Chip
+                key={category.id}
+                selected={categoryId === category.id}
+                onClick={() => setCategoryId(category.id)}
+              >
+                {category.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
         <div className="w-full min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
             Tipo de resultado
